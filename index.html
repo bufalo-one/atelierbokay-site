@@ -1,4 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+
 <title>AtelierBokay</title>
 <meta name="description" content="AtelierBokay, architecte d'intérieur à Lyon et en Rhône-Alpes. Projets en France, Martinique, Bénin, Suisse et Madagascar. Premier échange sur WhatsApp.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -554,7 +555,7 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
 (function(){
   var START='<title>', END='<!--/atelier'+'bokay-->';
   var SEL='header .brand b, header .brand small, .geo-ribbon small, main h1, main h2, main h3, main p, main li, main figcaption span, main figcaption b, main a.button-dark, main a.button-cream, main a.text-link, main .hero-stamp > span, footer .tagline, footer li, footer .legal span';
-  var source=null, editing=false, art=null, dl=null, ui=null, store=null, db=null, lib=[], libUnsub=null, libBox=null, libTarget=null;
+  var source=null, editing=false, mcp=null, TRIG='trig_01Xs8393t3TwDoykT89mBzpg', art=null, dl=null, ui=null, store=null, db=null, lib=[], libUnsub=null, libBox=null, libTarget=null;
 
   function tag(root){
     var all=[].slice.call(root.querySelectorAll(SEL));
@@ -779,11 +780,25 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
     ui.appendChild(bar);
   }
 
+  function note(t){ try{ sessionStorage.setItem('ab-note',t); }catch(e){} }
+  function firePublish(){
+    if(!mcp) return Promise.resolve('none');
+    return mcp.callTool('Claude Code Remote','fire_trigger',{trigger_id:TRIG,text:'Déclenché par Enregistrer'}).then(function(){return 'ok';}).catch(function(err){ return (err&&err.code)||'error'; });
+  }
   function doSave(btn){
     btn.disabled=true;btn.textContent='Enregistrement…';
     var html;
     try{ html=buildDocument(); }catch(err){ btn.disabled=false;btn.textContent='Enregistrer';msg("Impossible de préparer la page : "+err.message);return; }
-    art.publish(html).then(function(){ msg('Enregistré. La page se recharge.'); }).catch(function(err){
+    msg('Lancement de la mise en ligne…');
+    firePublish().then(function(r){
+      if(r==='ok') note("Enregistré. Le site atelierbokay.com sera à jour d'ici 3 à 5 minutes.");
+      else if(r==='none') note("Enregistré. La mise en ligne automatique n'est pas disponible ici : elle se fera ce soir.");
+      else if(r==='server_not_connected'||r==='needs_reauth') note("Enregistré. Pour publier tout de suite, reconnectez « Claude Code Remote » dans claude.ai → Connecteurs ; sinon la mise en ligne se fera ce soir.");
+      else if(r==='not_in_manifest'||r==='approval_required') note("Enregistré. La mise en ligne immédiate n'a pas été autorisée : elle se fera ce soir.");
+      else note("Enregistré. La mise en ligne immédiate n'a pas pu démarrer : elle se fera ce soir.");
+      return art.publish(html);
+    }).then(function(){ msg('Enregistré. La page se recharge.'); }).catch(function(err){
+      try{ sessionStorage.removeItem('ab-note'); }catch(e){}
       btn.disabled=false;btn.textContent='Enregistrer';
       var c=err&&err.code;
       if(c==='conflict') msg("Une autre version vient d'être enregistrée : la page se recharge, refaites vos modifications.");
@@ -817,6 +832,8 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
       document.addEventListener('keydown',onKey,true);
       document.addEventListener('paste',onPaste,true);
       render();
+      try{ var n=sessionStorage.getItem('ab-note'); if(n){ sessionStorage.removeItem('ab-note'); setTimeout(function(){ msg(n); },2500); } }catch(e){}
+      c.use('mcp').then(function(m){ mcp=m; }).catch(function(){});
       c.use('downloads').then(function(d){ dl=d; if(!editing) render(); }).catch(function(){});
       Promise.all([c.use('assets'),c.use('db')]).then(function(r){ store=r[0]; db=r[1]; if(store&&db){ watchLibrary(); render(); } }).catch(function(){});
     }).catch(function(){});
