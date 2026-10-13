@@ -759,7 +759,19 @@ header .logo-img,footer .logo-img{background:transparent!important}
 .ab-bar{background:#fffdf8;border:1px solid #dcd9cf;box-shadow:0 18px 55px rgba(30,56,45,.18);padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ab-bar p{margin:0 6px 0 2px;font-size:.8rem;color:#656b61;max-width:34ch}
 .ab-bar b{color:#bd663b}
-.ab-msg{font-size:.8rem;color:#284737;background:#fffdf8;border:1px solid #dcd9cf;padding:8px 12px}
+.ab-msg{position:absolute;left:0;bottom:100%;margin-bottom:8px;max-width:min(520px,calc(100vw - 40px));font-size:.8rem;line-height:1.45;color:#284737;background:#fffdf8;border:1px solid #dcd9cf;padding:8px 12px;box-shadow:0 8px 24px rgba(30,56,45,.15)}
+.ab-bar{flex-wrap:nowrap!important;overflow-x:auto;max-width:calc(100vw - 110px);padding:5px 6px!important;gap:4px!important;scrollbar-width:thin}
+.ab-bar .ab-fmt{flex-wrap:nowrap!important;padding-left:4px;gap:3px}
+.ab-bar>*,.ab-bar .ab-fmt>*{flex:none}
+.ab-owner .ab-bar button{padding:7px 10px;font-size:.78rem;white-space:nowrap;flex:none}
+.ab-owner .ab-bar .ab-fmt button{padding:6px 7px;min-width:30px}
+.ab-owner .ab-bar .ab-fmt select{padding:6px 4px;font-size:.76rem;max-width:118px}
+.ab-owner .ab-bar button.ab-ico{min-width:30px;padding:7px 8px}
+.ab-tag{font:600 .74rem "DM Sans",Arial,sans-serif;color:#bd663b;white-space:nowrap;padding:0 4px 0 2px;flex:none}
+.ab-cwrap{position:relative;display:inline-flex;flex:none}
+.ab-owner .ab-bar .ab-fmt button.ab-cbtn span{display:inline-block;font-weight:700;border-bottom:3px solid #bd663b;line-height:1.1}
+.ab-cpop{position:fixed;transform:translateY(-100%);margin-top:-52px;background:#fffdf8;border:1px solid #dcd9cf;box-shadow:0 8px 24px rgba(30,56,45,.18);padding:8px;z-index:70}
+.ab-cpop .ab-sw{border-left:0;padding-left:0}
 body.ab-editing [data-e]{outline:1px dashed rgba(189,102,59,.55);outline-offset:3px;cursor:text}
 body.ab-editing [data-e]:hover,body.ab-editing [data-e]:focus{outline:2px solid #bd663b;background:rgba(189,102,59,.06)}
 body.ab-editing img[data-i]{cursor:pointer;outline:3px dashed #bd663b;outline-offset:-3px}
@@ -891,10 +903,12 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>'+reset+'</style></head><body>'+doc.body.innerHTML+'</body></html>';
   }
 
-  function msg(text){
+  var msgTimer=0;
+  function msg(text,ms){
     var m=ui.querySelector('.ab-msg');
     if(!m){m=document.createElement('span');m.className='ab-msg';ui.appendChild(m);}
-    m.textContent=text;
+    m.textContent=text; m.style.display='';
+    clearTimeout(msgTimer); msgTimer=setTimeout(function(){ if(m.isConnected) m.style.display='none'; },ms||6000);
   }
 
   function onClick(e){
@@ -1119,7 +1133,13 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     var sw=document.createElement('div'); sw.className='ab-sw'; sw.setAttribute('role','group'); sw.setAttribute('aria-label','Couleur du texte');
     [["vert", "#284737", "Vert forêt"], ["vertfonce", "#1e382d", "Vert profond"], ["terracotta", "#bd663b", "Terracotta"], ["brique", "#a3452a", "Brique"], ["peche", "#e6a77f", "Pêche"], ["sauge", "#747b5d", "Sauge"], ["gris", "#656b61", "Gris"], ["creme", "#f6efe4", "Crème"], ["blanc", "#ffffff", "Blanc"]].forEach(function(c){ var b=document.createElement('button'); b.type='button'; b.style.background=c[1]; b.title='Couleur : '+c[2]; b.setAttribute('aria-label','Couleur '+c[2]); b.addEventListener('mousedown',function(e){e.preventDefault();}); b.onclick=function(){ setGroup('ab-c-','ab-c-'+c[0]); }; sw.appendChild(b); });
     (function(){ var b=document.createElement('button'); b.type='button'; b.className='ab-sw-x'; b.title='Couleur d’origine'; b.setAttribute('aria-label','Couleur d’origine'); b.addEventListener('mousedown',function(e){e.preventDefault();}); b.onclick=function(){ setGroup('ab-c-',''); }; sw.appendChild(b); })();
-    box.appendChild(sw);
+    var cb=document.createElement('button'); cb.type='button'; cb.className='ab-cbtn'; cb.innerHTML='<span>A</span>'; cb.title='Couleur du texte'; cb.setAttribute('aria-label','Couleur du texte'); cb.setAttribute('aria-expanded','false');
+    cb.addEventListener('mousedown',function(e){ e.preventDefault(); editableRange(); });
+    var pop=document.createElement('div'); pop.className='ab-cpop'; pop.hidden=true; pop.appendChild(sw);
+    cb.onclick=function(){ pop.hidden=!pop.hidden; cb.setAttribute('aria-expanded',String(!pop.hidden)); };
+    sw.addEventListener('click',function(){ pop.hidden=true; cb.setAttribute('aria-expanded','false'); });
+    var cwrap=document.createElement('span'); cwrap.className='ab-cwrap'; cwrap.appendChild(cb); cwrap.appendChild(pop);
+    box.appendChild(cwrap);
     btn('Normal','Enlever la mise en forme',function(){
       var x=editableRange(); if(!x){ msg('Cliquez d’abord dans un texte.'); return; }
       var s=window.getSelection(); s.removeAllRanges(); s.addRange(x.range);
@@ -1388,17 +1408,26 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
       }
       return;
     }
-    var bar=document.createElement('div');bar.className='ab-bar';
-    bar.innerHTML='<p><b>Mode édition.</b> Cliquez sur un texte pour le modifier, sur une image pour choisir dans votre bibliothèque, ou ajoutez un bloc. Survolez un élément puis tirez sa poignée ⠿ pour le déplacer. Sélectionnez des mots pour les mettre en forme. Changez de page avec le menu.</p>';
-    bar.appendChild(formatBar());
+    var mini=false; try{ mini=sessionStorage.getItem('ab-mini')==='1'; }catch(e){}
+    var bar=document.createElement('div');bar.className='ab-bar'+(mini?' ab-mini':'');
+    var tag0=document.createElement('span');tag0.className='ab-tag';tag0.textContent='✎ Édition';bar.appendChild(tag0);
+    var tog=document.createElement('button');tog.className='alt ab-ico';tog.textContent=mini?'▴':'▾';tog.title=mini?'Afficher la barre d’outils':'Réduire la barre d’outils';
+    tog.onclick=function(){ try{ sessionStorage.setItem('ab-mini',mini?'0':'1'); }catch(e){} render(); };
+    bar.appendChild(tog);
+    if(!mini) bar.appendChild(formatBar());
     var save=document.createElement('button');save.textContent='Enregistrer';
     save.onclick=function(){doSave(save);};
-    var cancel=document.createElement('button');cancel.className='alt';cancel.textContent='Annuler';
-    cancel.onclick=function(){location.reload();};
     bar.appendChild(save);
-    var add=document.createElement('button');add.className='alt';add.textContent='+ Ajouter un bloc';add.onclick=openAddBloc;bar.appendChild(add);
-    if(store&&db){ var lb=document.createElement('button');lb.className='alt';lb.textContent="Bibliothèque d'images";lb.onclick=function(){openLibrary(null);};bar.appendChild(lb); }
-    bar.appendChild(cancel);
+    if(!mini){
+      var add=document.createElement('button');add.className='alt';add.textContent='+ Bloc';add.title='Ajouter un bloc de texte ou de photos';add.onclick=openAddBloc;bar.appendChild(add);
+      if(store&&db){ var lb=document.createElement('button');lb.className='alt';lb.textContent='Images';lb.title="Bibliothèque d'images";lb.onclick=function(){openLibrary(null);};bar.appendChild(lb); }
+      var cancel=document.createElement('button');cancel.className='alt';cancel.textContent='Annuler';cancel.title='Revenir au dernier enregistrement';
+      cancel.onclick=function(){location.reload();};
+      bar.appendChild(cancel);
+      var help=document.createElement('button');help.className='alt ab-ico';help.textContent='?';help.title='Aide';
+      help.onclick=function(){ msg('Cliquez sur un texte pour l’écrire, sur une image pour la changer. Survolez un élément et tirez sa poignée ⠿ pour le déplacer. Sélectionnez des mots pour les mettre en forme. Changez de page avec le menu.',12000); };
+      bar.appendChild(help);
+    }
     ui.appendChild(bar);
   }
 
