@@ -3,7 +3,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;family=Lora:ital,wght@0,400;0,600;1,400&amp;family=Montserrat:wght@400;500;600&amp;family=Josefin+Sans:wght@400;600&amp;family=Great+Vibes&amp;display=swap">
 <style>
 /* Layout : copie fidèle du site AtelierBokay (Manus) — fonds papier/crème, vert réservé à l'en-tête, au bandeau des villes, aux bandeaux d'étapes et au pied de page */
 :root{color-scheme:light;
@@ -549,6 +549,13 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
 .ab-lib-item .row{display:flex;gap:6px;flex-wrap:wrap}
 .ab-lib-item .row button{padding:7px 10px;font-size:.76rem}
 .ab-lib-empty{grid-column:1/-1;padding:28px;text-align:center;color:#656b61;font-size:.9rem;border:1px dashed #dcd9cf}
+/* Tailles de texte choisies dans l'espace propriétaire */
+.ab-s-m2{font-size:.8em}.ab-s-m1{font-size:.9em}.ab-s-p1{font-size:1.15em}.ab-s-p2{font-size:1.35em}.ab-s-p3{font-size:1.6em}
+.ab-f-cormorant{font-family:"Cormorant Garamond",Georgia,serif}.ab-f-dmsans{font-family:"DM Sans",Arial,sans-serif}.ab-f-playfair{font-family:"Playfair Display",Georgia,serif}.ab-f-lora{font-family:Lora,Georgia,serif}.ab-f-montserrat{font-family:Montserrat,Arial,sans-serif}.ab-f-josefin{font-family:"Josefin Sans",Arial,sans-serif}.ab-f-vibes{font-family:"Great Vibes",cursive}
+.ab-owner .ab-fmt select{font:500 .8rem "DM Sans",Arial,sans-serif;padding:9px 8px;border:1px solid #284737;background:#fffdf8;color:#284737;max-width:150px}
+.ab-fmt{display:flex;gap:4px;align-items:center;padding-left:8px;margin-left:2px;border-left:1px solid #dcd9cf}
+.ab-owner .ab-fmt button{padding:9px 11px;min-width:38px;background:#fffdf8;color:#284737}
+.ab-owner .ab-fmt button:hover{background:#bd663b;border-color:#bd663b;color:#fff}
 </style>
 <script>
 (function(){
@@ -748,6 +755,78 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
     },function(){});
   }
 
+  /* Mise en forme : gras, italique, taille, police */
+  var SIZES=['ab-s-m2','ab-s-m1','','ab-s-p1','ab-s-p2','ab-s-p3'];
+  var FONTS=[['','Police…'],['ab-f-cormorant','Cormorant (titres)'],['ab-f-dmsans','DM Sans (texte)'],['ab-f-playfair','Playfair Display'],['ab-f-lora','Lora'],['ab-f-montserrat','Montserrat'],['ab-f-josefin','Josefin Sans'],['ab-f-vibes','Great Vibes (manuscrite)'],['none','Police d’origine']];
+  var lastRange=null;
+  function editableRange(){
+    var s=window.getSelection();
+    if(s&&s.rangeCount){ var r=s.getRangeAt(0), el=r.commonAncestorContainer; el=el.nodeType===1?el:el.parentNode; if(el&&el.closest&&el.closest('[data-e]')) lastRange=r.cloneRange(); }
+    if(!lastRange) return null;
+    var host=lastRange.commonAncestorContainer; host=host.nodeType===1?host:host.parentNode;
+    host=host&&host.closest('[data-e]'); if(!host||!host.isConnected) return null;
+    var r2=lastRange.cloneRange();
+    if(r2.collapsed) r2.selectNodeContents(host);
+    return {range:r2,host:host};
+  }
+  function groupOf(span,prefix){ return [].slice.call(span.classList).filter(function(c){return c.indexOf(prefix)===0;})[0]||''; }
+  function wrapping(range,host,prefix){
+    var n=range.commonAncestorContainer; n=n.nodeType===1?n:n.parentNode;
+    while(n&&n!==host){ if(n.tagName==='SPAN'&&groupOf(n,prefix)&&n.textContent.trim()===range.toString().trim()) return n; n=n.parentNode; }
+    var only=host.childNodes.length===1&&host.firstChild.tagName==='SPAN'&&groupOf(host.firstChild,prefix)?host.firstChild:null;
+    if(only&&only.textContent.trim()===range.toString().trim()) return only;
+    return null;
+  }
+  function unwrap(sp){ var p=sp.parentNode; while(sp.firstChild) p.insertBefore(sp.firstChild,sp); p.removeChild(sp); }
+  function setGroup(prefix,cls){
+    var x=editableRange(); if(!x){ msg('Cliquez d’abord dans un texte, ou sélectionnez des mots.'); return; }
+    var sp=wrapping(x.range,x.host,prefix);
+    if(sp){ sp.classList.remove(groupOf(sp,prefix)); if(cls) sp.classList.add(cls); if(!sp.className) unwrap(sp); }
+    else if(cls){
+      var frag=x.range.extractContents();
+      [].slice.call(frag.querySelectorAll('span')).forEach(function(s){ var g=groupOf(s,prefix); if(g){ s.classList.remove(g); if(!s.className) unwrap(s); } });
+      sp=document.createElement('span'); sp.className=cls; sp.appendChild(frag); x.range.insertNode(sp);
+    }
+    if(sp&&sp.isConnected){ var r=document.createRange(); r.selectNodeContents(sp); var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); lastRange=r.cloneRange(); }
+    msg('Mise en forme appliquée. Pensez à enregistrer.');
+  }
+  function resize(step){
+    var x=editableRange(); if(!x){ msg('Cliquez d’abord dans un texte, ou sélectionnez des mots.'); return; }
+    var sp=wrapping(x.range,x.host,'ab-s-'), cur=sp?SIZES.indexOf(groupOf(sp,'ab-s-')):2;
+    var next=Math.max(0,Math.min(SIZES.length-1,cur+step));
+    if(next===cur){ msg(step>0?'Taille maximale atteinte.':'Taille minimale atteinte.'); return; }
+    setGroup('ab-s-',SIZES[next]);
+  }
+  function exec(cmd){
+    var x=editableRange(); if(!x){ msg('Sélectionnez d’abord des mots dans un texte.'); return; }
+    var s=window.getSelection(); s.removeAllRanges(); s.addRange(x.range);
+    try{ document.execCommand('styleWithCSS',false,false); }catch(e){}
+    document.execCommand(cmd,false,null);
+    msg('Mise en forme appliquée. Pensez à enregistrer.');
+  }
+  function formatBar(){
+    var box=document.createElement('div'); box.className='ab-fmt';
+    function btn(label,title,fn,style){ var b=document.createElement('button'); b.className='alt'; b.type='button'; b.innerHTML=label; b.title=title; b.setAttribute('aria-label',title); if(style) b.style.cssText=style; b.addEventListener('mousedown',function(e){e.preventDefault();}); b.onclick=fn; box.appendChild(b); }
+    btn('G','Gras',function(){exec('bold');},'font-weight:700');
+    btn('I','Italique',function(){exec('italic');},'font-style:italic;font-family:Georgia,serif');
+    btn('A−','Réduire la taille',function(){resize(-1);});
+    btn('A+','Agrandir la taille',function(){resize(1);});
+    var sel=document.createElement('select'); sel.setAttribute('aria-label','Police');
+    FONTS.forEach(function(f){ var o=document.createElement('option'); o.value=f[0]; o.textContent=f[1]; sel.appendChild(o); });
+    sel.addEventListener('mousedown',function(){ editableRange(); });
+    sel.onchange=function(){ var v=sel.value; sel.value=''; if(!v) return; setGroup('ab-f-',v==='none'?'':v); };
+    box.appendChild(sel);
+    btn('Normal','Enlever la mise en forme',function(){
+      var x=editableRange(); if(!x){ msg('Cliquez d’abord dans un texte.'); return; }
+      var s=window.getSelection(); s.removeAllRanges(); s.addRange(x.range);
+      document.execCommand('removeFormat',false,null);
+      var root=x.host; [].slice.call(root.querySelectorAll('span')).forEach(function(sp){ if(x.range.intersectsNode(sp)){ ['ab-s-','ab-f-'].forEach(function(p){ var g=groupOf(sp,p); if(g) sp.classList.remove(g); }); if(!sp.className) unwrap(sp); } });
+      msg('Mise en forme retirée. Pensez à enregistrer.');
+    });
+    return box;
+  }
+  document.addEventListener('selectionchange',function(){ if(editing) editableRange(); });
+
   function setEditing(on){
     editing=on;
     document.body.classList.toggle('ab-editing',on);
@@ -768,7 +847,8 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
       return;
     }
     var bar=document.createElement('div');bar.className='ab-bar';
-    bar.innerHTML='<p><b>Mode édition.</b> Cliquez sur un texte pour le modifier, sur une image pour choisir dans votre bibliothèque. Changez de page avec le menu.</p>';
+    bar.innerHTML='<p><b>Mode édition.</b> Cliquez sur un texte pour le modifier, sur une image pour choisir dans votre bibliothèque. Sélectionnez des mots pour les mettre en forme. Changez de page avec le menu.</p>';
+    bar.appendChild(formatBar());
     var save=document.createElement('button');save.textContent='Enregistrer';
     save.onclick=function(){doSave(save);};
     var cancel=document.createElement('button');cancel.className='alt';cancel.textContent='Annuler';
