@@ -804,6 +804,8 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
 .ab-bloc-img[data-asset=""]{display:none!important}
 body.ab-editing .ab-bloc-img[data-asset=""]{display:block!important}
 body.ab-editing .ab-bloc{outline:2px dashed rgba(40,71,55,.35);outline-offset:-10px}
+body.ab-editing main .page > section{position:relative}
+body.ab-editing main .page > section:hover{box-shadow:inset 0 0 0 2px rgba(189,102,59,.35)}
 .ab-bloc-tools{position:absolute;top:16px;right:16px;z-index:6;display:flex;gap:6px;flex-wrap:wrap;font-family:"DM Sans",Arial,sans-serif}
 .ab-bloc-tools button{font:500 .78rem "DM Sans",Arial,sans-serif;padding:8px 11px;border:1px solid #284737;background:#fffdf8;color:#284737;cursor:pointer;box-shadow:0 4px 14px rgba(30,56,45,.15)}
 .ab-bloc-tools button:hover{background:#bd663b;border-color:#bd663b;color:#fff}
@@ -1167,8 +1169,10 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
   }
   function placeBloc(el,before){
     var page=el.parentNode;
-    var d=srcDoc(), se=d.querySelector('.ab-bloc[data-bloc="'+el.getAttribute('data-bloc')+'"]');
-    if(!se||!sameShape(page,se.parentNode)){ msg('Déplacement impossible : enregistrez, puis réessayez.'); return false; }
+    var d=srcDoc(), sp0=d.getElementById(page.id);
+    if(!sameShape(page,sp0)){ msg('Déplacement impossible : enregistrez, puis réessayez.'); return false; }
+    var se=sp0.children[[].indexOf.call(page.children,el)];
+    if(!se||se.tagName!==el.tagName){ msg('Déplacement impossible : enregistrez, puis réessayez.'); return false; }
     page.insertBefore(el,before||null);
     var idx=[].indexOf.call(page.children,el), sp=se.parentNode;
     sp.removeChild(se); sp.insertBefore(se,sp.children[idx]||null);
@@ -1225,7 +1229,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
   function blocTools(){
     document.querySelectorAll('.ab-bloc-tools').forEach(function(t){ t.remove(); });
     if(!editing) return;
-    document.querySelectorAll('main .ab-bloc').forEach(function(el){
+    document.querySelectorAll('main .page > section').forEach(function(el){
       var box=document.createElement('div'); box.className='ab-bloc-tools';
       function b(label,title,fn,cls){ var x=document.createElement('button'); x.type='button'; x.textContent=label; x.title=title; x.setAttribute('aria-label',title); if(cls) x.className=cls; x.addEventListener('mousedown',function(e){e.preventDefault();}); x.onclick=function(e){e.preventDefault();e.stopPropagation();fn(x);}; box.appendChild(x); }
       var g=document.createElement('button'); g.type='button'; g.className='ab-grip'; g.textContent='⠿ Glisser'; g.title='Maintenir et faire glisser pour déplacer le bloc'; g.setAttribute('aria-label','Faire glisser le bloc');
@@ -1233,7 +1237,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
       box.appendChild(g);
       b('↑ Monter','Monter le bloc',function(){ moveBloc(el,-1); });
       b('↓ Descendre','Descendre le bloc',function(){ moveBloc(el,1); });
-      b('Supprimer','Supprimer le bloc',function(x){
+      if(el.classList.contains('ab-bloc')) b('Supprimer','Supprimer le bloc',function(x){
         if(!x.classList.contains('sure')){ x.classList.add('sure'); x.textContent='Confirmer la suppression'; setTimeout(function(){ if(x.isConnected){ x.classList.remove('sure'); x.textContent='Supprimer'; } },4000); return; }
         deleteBloc(el);
       },'danger');
