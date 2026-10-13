@@ -791,6 +791,31 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
 .ab-fmt{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding-left:8px;margin-left:2px;border-left:1px solid #dcd9cf}
 .ab-owner .ab-fmt button{padding:9px 11px;min-width:38px;background:#fffdf8;color:#284737}
 .ab-owner .ab-fmt button:hover{background:#bd663b;border-color:#bd663b;color:#fff}
+/* Blocs ajoutés depuis l'espace propriétaire */
+.ab-bloc{position:relative}
+.ab-bloc .ab-stack>*+*{margin-top:18px}
+.ab-bloc p:not(.eyebrow){color:#656b61;max-width:70ch}
+.ab-bloc-fig{margin:0;min-width:0}
+.ab-bloc-fig img{width:100%;display:block;object-fit:cover;aspect-ratio:3/2;background:#e5e7dc}
+.ab-bloc-wide .ab-bloc-fig img{aspect-ratio:16/9}
+.ab-bloc-fig figcaption{padding-top:10px;font-size:.82rem;color:#656b61}
+.ab-bloc-gal{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:30px}
+@media (max-width:760px){.ab-bloc-gal{grid-template-columns:1fr}}
+.ab-bloc-img[data-asset=""]{display:none!important}
+body.ab-editing .ab-bloc-img[data-asset=""]{display:block!important}
+body.ab-editing .ab-bloc{outline:2px dashed rgba(40,71,55,.35);outline-offset:-10px}
+.ab-bloc-tools{position:absolute;top:16px;right:16px;z-index:6;display:flex;gap:6px;flex-wrap:wrap;font-family:"DM Sans",Arial,sans-serif}
+.ab-bloc-tools button{font:500 .78rem "DM Sans",Arial,sans-serif;padding:8px 11px;border:1px solid #284737;background:#fffdf8;color:#284737;cursor:pointer;box-shadow:0 4px 14px rgba(30,56,45,.15)}
+.ab-bloc-tools button:hover{background:#bd663b;border-color:#bd663b;color:#fff}
+.ab-bloc-tools button.danger{color:#a3452a;border-color:#a3452a}
+.ab-bloc-tools button.danger.sure{background:#a3452a;color:#fff}
+.ab-add-types{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;padding:16px 18px}
+.ab-lib .ab-add-types button{display:grid;gap:4px;text-align:left;padding:12px 14px;background:#fffdf8;color:#284737;border:1px solid #dcd9cf;font:500 .9rem "DM Sans",Arial,sans-serif}
+.ab-lib .ab-add-types button small{font-weight:400;font-size:.76rem;color:#656b61}
+.ab-lib .ab-add-types button.on{border:2px solid #bd663b;background:#fbf3ec}
+.ab-add-where{display:grid;gap:6px;padding:0 18px 16px;font-size:.82rem;color:#24332b}
+.ab-add-where select{font:inherit;padding:10px;border:1px solid #dcd9cf;background:#fff;color:#24332b}
+.ab-add-foot{display:flex;gap:8px;justify-content:flex-end;padding:14px 18px;border-top:1px solid #dcd9cf}
 </style>
 <script>
 (function(){
@@ -840,7 +865,11 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
     });
     document.querySelectorAll('img[data-i]').forEach(function(im){
       var t=doc.body.querySelector('img[data-i="'+im.getAttribute('data-i')+'"]');
-      if(t && t.getAttribute('src')!==im.getAttribute('src')) t.setAttribute('src',im.getAttribute('src'));
+      if(!t) return;
+      var asset=im.getAttribute('data-asset');
+      if(asset!==null){ t.setAttribute('data-asset',asset); t.setAttribute('src',asset?'blocs/img/'+asset+'.jpg':PH); return; }
+      t.removeAttribute('data-asset');
+      if(t.getAttribute('src')!==im.getAttribute('src')) t.setAttribute('src',im.getAttribute('src'));
     });
     doc.body.querySelectorAll('[data-e],[data-i]').forEach(function(el){el.removeAttribute('data-e');el.removeAttribute('data-i');});
     doc.body.querySelectorAll('.page').forEach(function(p){ if(p.id==='p-accueil') p.removeAttribute('hidden'); else p.setAttribute('hidden',''); });
@@ -898,7 +927,7 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
           var url=c.toDataURL(png?'image/png':'image/jpeg',0.82);
           if(im.classList.contains('logo-img')){
             document.querySelectorAll('img.logo-img').forEach(function(l){l.setAttribute('src',url);});
-          } else im.setAttribute('src',url);
+          } else { im.removeAttribute('data-asset'); im.setAttribute('src',url); }
           msg('Image remplacée. Pensez à enregistrer.');
         };
         img.src=r.result;
@@ -923,6 +952,7 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
   }
   function useAsset(id,btn){
     if(!libTarget) return;
+    if(libTarget.classList.contains('ab-bloc-img')){ libTarget.setAttribute('data-asset',id); libTarget.setAttribute('src','/_blob/'+id); closeLibrary(); msg('Photo placée. Pensez à enregistrer.'); return; }
     if(btn){btn.disabled=true;btn.textContent='…';}
     fetch('/_blob/'+id).then(function(r){ if(!r.ok) throw new Error('missing'); return r.blob(); }).then(function(b){
       var png=/png|svg/.test(b.type);
@@ -960,6 +990,7 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
     inp.click();
   }
   function removeFromLibrary(item,btn){
+    if(document.querySelector('img[data-asset="'+item.asset+'"]')){ libNote('Cette image est utilisée dans un bloc du site : remplacez-la ou supprimez le bloc avant de la supprimer.'); return; }
     if(!btn.classList.contains('sure')){ btn.classList.add('sure'); btn.textContent='Confirmer'; setTimeout(function(){ if(btn.isConnected){btn.classList.remove('sure');btn.textContent='Supprimer';} },4000); return; }
     btn.disabled=true;
     db.collection('bibliotheque').doc(item.id).delete().then(function(){ return store.delete(item.asset); })
@@ -1090,10 +1121,122 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
   }
   document.addEventListener('selectionchange',function(){ if(editing) editableRange(); });
 
+
+  /* Blocs : texte, photo, texte + photo, galerie */
+  var PH='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="#e5e7dc"/><text x="300" y="207" font-family="Arial,sans-serif" font-size="22" fill="#656b61" text-anchor="middle">Cliquez pour choisir une photo</text></svg>');
+  var PAGES={'p-accueil':'Accueil','p-services':'Services','p-apropos':'À propos','p-realisations':'Réalisations','p-tarifs':'Tarifs','p-contact':'Contact'};
+  var TYPES=[['texte','Texte','Un titre et un paragraphe'],['photo','Photo','Une grande image avec légende'],['texte-photo','Texte + photo','Le texte à gauche, la photo à droite'],['galerie','Galerie','Trois photos côte à côte']];
+  function blocImg(){ return '<img class="ab-bloc-img" data-asset="" src="'+PH+'" alt="">'; }
+  function blocFig(cap){ return '<figure class="ab-bloc-fig">'+blocImg()+(cap?'<figcaption><span>Légende de la photo</span></figcaption>':'')+'</figure>'; }
+  function blocHTML(type,id){
+    var head='<p class="eyebrow">Sur-titre</p><h2>Votre titre</h2>';
+    var txt='<p>Votre texte. Cliquez ici pour écrire, puis mettez-le en forme avec la barre d’outils.</p>';
+    var inner;
+    if(type==='photo') inner='<div class="shell ab-bloc-wide">'+blocFig(true)+'</div>';
+    else if(type==='texte-photo') inner='<div class="shell split"><div class="head">'+head+txt+'</div>'+blocFig(false)+'</div>';
+    else if(type==='galerie') inner='<div class="shell ab-stack">'+head+'<div class="ab-bloc-gal">'+blocFig(true)+blocFig(true)+blocFig(true)+'</div></div>';
+    else inner='<div class="shell ab-stack">'+head+txt+'</div>';
+    return '<section class="ab-bloc" data-bloc="'+id+'" data-type="'+type+'">'+inner+'</section>';
+  }
+  function srcDoc(){ var d=document.implementation.createHTMLDocument(''); d.body.innerHTML=source; return d; }
+  function visiblePage(){ return document.querySelector('main .page:not([hidden])'); }
+  function retag(){
+    document.querySelectorAll('[data-e]').forEach(function(el){ el.removeAttribute('data-e'); });
+    document.querySelectorAll('img[data-i]').forEach(function(el){ el.removeAttribute('data-i'); });
+    tag(document.body);
+    if(editing) document.querySelectorAll('[data-e]').forEach(function(el){ el.setAttribute('contenteditable','true'); });
+    blocTools();
+  }
+  function sameShape(live,sp){ return sp && live.children.length===sp.children.length; }
+  function addBloc(type,pos){
+    var page=visiblePage(); if(!page) return;
+    var d=srcDoc(), sp=d.getElementById(page.id);
+    if(!sameShape(page,sp)){ msg('Ajout impossible : enregistrez, puis réessayez.'); return; }
+    var id='b'+Date.now().toString(36), html=blocHTML(type,id);
+    var a=document.createElement('div'); a.innerHTML=html; var el=a.firstElementChild;
+    page.insertBefore(el,page.children[pos]||null);
+    var b=d.createElement('div'); b.innerHTML=html; sp.insertBefore(b.firstElementChild,sp.children[pos]||null);
+    source=d.body.innerHTML; retag();
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    msg(type==='texte'?'Bloc ajouté : cliquez sur les textes pour écrire. Pensez à enregistrer.':'Bloc ajouté : cliquez sur les textes pour écrire et sur la photo pour la choisir. Pensez à enregistrer.');
+  }
+  function moveBloc(el,dir){
+    var page=el.parentNode, sib=dir<0?el.previousElementSibling:el.nextElementSibling;
+    while(sib&&sib.hasAttribute('hidden')) sib=dir<0?sib.previousElementSibling:sib.nextElementSibling;
+    if(!sib){ msg(dir<0?'Ce bloc est déjà tout en haut de la page.':'Ce bloc est déjà tout en bas de la page.'); return; }
+    var d=srcDoc(), se=d.querySelector('.ab-bloc[data-bloc="'+el.getAttribute('data-bloc')+'"]');
+    if(!se||!sameShape(page,se.parentNode)){ msg('Déplacement impossible : enregistrez, puis réessayez.'); return; }
+    if(dir<0) page.insertBefore(el,sib); else page.insertBefore(el,sib.nextElementSibling);
+    var idx=[].indexOf.call(page.children,el), sp=se.parentNode;
+    sp.removeChild(se); sp.insertBefore(se,sp.children[idx]||null);
+    source=d.body.innerHTML; retag();
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    msg('Bloc déplacé. Pensez à enregistrer.');
+  }
+  function deleteBloc(el){
+    var d=srcDoc(), se=d.querySelector('.ab-bloc[data-bloc="'+el.getAttribute('data-bloc')+'"]');
+    if(se) se.parentNode.removeChild(se);
+    el.parentNode.removeChild(el);
+    source=d.body.innerHTML; retag();
+    msg('Bloc supprimé. Pensez à enregistrer (ou Annuler pour le retrouver).');
+  }
+  function blocTools(){
+    document.querySelectorAll('.ab-bloc-tools').forEach(function(t){ t.remove(); });
+    if(!editing) return;
+    document.querySelectorAll('main .ab-bloc').forEach(function(el){
+      var box=document.createElement('div'); box.className='ab-bloc-tools';
+      function b(label,title,fn,cls){ var x=document.createElement('button'); x.type='button'; x.textContent=label; x.title=title; x.setAttribute('aria-label',title); if(cls) x.className=cls; x.addEventListener('mousedown',function(e){e.preventDefault();}); x.onclick=function(e){e.preventDefault();e.stopPropagation();fn(x);}; box.appendChild(x); }
+      b('↑ Monter','Monter le bloc',function(){ moveBloc(el,-1); });
+      b('↓ Descendre','Descendre le bloc',function(){ moveBloc(el,1); });
+      b('Supprimer','Supprimer le bloc',function(x){
+        if(!x.classList.contains('sure')){ x.classList.add('sure'); x.textContent='Confirmer la suppression'; setTimeout(function(){ if(x.isConnected){ x.classList.remove('sure'); x.textContent='Supprimer'; } },4000); return; }
+        deleteBloc(el);
+      },'danger');
+      el.insertBefore(box,el.firstChild);
+    });
+  }
+  function sectionLabel(sec,i){
+    var h=sec.querySelector('.eyebrow, h1, h2, h3');
+    var t=h?h.textContent.replace(/\s+/g,' ').trim():'';
+    if(t.length>48) t=t.slice(0,46)+'…';
+    return t||('Section '+(i+1));
+  }
+  function openAddBloc(){
+    var page=visiblePage(); if(!page) return;
+    var box=document.createElement('div'); box.className='ab-lib';
+    box.innerHTML='<div class="ab-lib-panel" role="dialog" aria-label="Ajouter un bloc"><div class="ab-lib-head"><h3>Ajouter un bloc</h3></div><p class="ab-lib-note"></p><div class="ab-add-types"></div><label class="ab-add-where">Emplacement<select></select></label><div class="ab-add-foot"></div></div>';
+    box.querySelector('.ab-lib-note').textContent='Le bloc sera ajouté sur la page « '+(PAGES[page.id]||'affichée')+' ». Pour une autre page, fermez cette fenêtre et changez de page avec le menu.';
+    var chosen='texte', types=box.querySelector('.ab-add-types');
+    TYPES.forEach(function(t){
+      var x=document.createElement('button'); x.type='button'; x.innerHTML='<span></span><small></small>';
+      x.firstChild.textContent=t[1]; x.lastChild.textContent=t[2];
+      if(t[0]===chosen) x.classList.add('on');
+      x.onclick=function(){ chosen=t[0]; types.querySelectorAll('button').forEach(function(y){ y.classList.remove('on'); }); x.classList.add('on'); };
+      types.appendChild(x);
+    });
+    var sel=box.querySelector('select');
+    var o=document.createElement('option'); o.value='0'; o.textContent='Tout en haut de la page'; sel.appendChild(o);
+    var kids=[].slice.call(page.children);
+    kids.forEach(function(sec,i){
+      if(sec.hasAttribute('hidden')) return;
+      var op=document.createElement('option'); op.value=String(i+1); op.textContent='Après : '+sectionLabel(sec,i); sel.appendChild(op);
+    });
+    sel.value=String(kids.length);
+    if(sel.selectedIndex<0) sel.selectedIndex=sel.options.length-1;
+    sel.options[sel.selectedIndex].textContent+=' (tout en bas)';
+    var foot=box.querySelector('.ab-add-foot');
+    var cancel=document.createElement('button'); cancel.className='alt'; cancel.textContent='Annuler'; cancel.onclick=function(){ box.remove(); };
+    var ok=document.createElement('button'); ok.textContent='Ajouter le bloc'; ok.onclick=function(){ box.remove(); addBloc(chosen,parseInt(sel.value,10)||0); };
+    foot.appendChild(cancel); foot.appendChild(ok);
+    box.addEventListener('click',function(ev){ if(ev.target===box) box.remove(); });
+    document.body.appendChild(box);
+  }
+
   function setEditing(on){
     editing=on;
     document.body.classList.toggle('ab-editing',on);
     document.querySelectorAll('[data-e]').forEach(function(el){ if(on) el.setAttribute('contenteditable','true'); else el.removeAttribute('contenteditable'); });
+    blocTools();
     render();
   }
 
@@ -1110,13 +1253,14 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
       return;
     }
     var bar=document.createElement('div');bar.className='ab-bar';
-    bar.innerHTML='<p><b>Mode édition.</b> Cliquez sur un texte pour le modifier, sur une image pour choisir dans votre bibliothèque. Sélectionnez des mots pour les mettre en forme. Changez de page avec le menu.</p>';
+    bar.innerHTML='<p><b>Mode édition.</b> Cliquez sur un texte pour le modifier, sur une image pour choisir dans votre bibliothèque, ou ajoutez un bloc. Sélectionnez des mots pour les mettre en forme. Changez de page avec le menu.</p>';
     bar.appendChild(formatBar());
     var save=document.createElement('button');save.textContent='Enregistrer';
     save.onclick=function(){doSave(save);};
     var cancel=document.createElement('button');cancel.className='alt';cancel.textContent='Annuler';
     cancel.onclick=function(){location.reload();};
     bar.appendChild(save);
+    var add=document.createElement('button');add.className='alt';add.textContent='+ Ajouter un bloc';add.onclick=openAddBloc;bar.appendChild(add);
     if(store&&db){ var lb=document.createElement('button');lb.className='alt';lb.textContent="Bibliothèque d'images";lb.onclick=function(){openLibrary(null);};bar.appendChild(lb); }
     bar.appendChild(cancel);
     ui.appendChild(bar);
@@ -1166,6 +1310,7 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
     if(a<0||b<0) return;
     source=raw.slice(a,b+END.length);
     var c=window.claude; if(!c||typeof c.use!=='function') return;
+    document.querySelectorAll('img.ab-bloc-img[data-asset]').forEach(function(im){ var a=im.getAttribute('data-asset'); if(/^[0-9a-f]{32}$/.test(a)) im.setAttribute('src','/_blob/'+a); });
     c.use('artifact').then(function(x){
       art=x; if(!art) return;
       tag(document.body);

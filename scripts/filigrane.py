@@ -2,15 +2,14 @@
 """Ajoute le filigrane « AtelierBokay » sur les photos des réalisations.
 
 Usage : python3 scripts/filigrane.py
-Traite chaque realisations/img/*.jpg qui n'est pas encore listé dans
-realisations/img/filigrane.txt, puis met cette liste à jour (une seule fois par photo).
+Traite chaque *.jpg de realisations/img/ et blocs/img/ qui n'est pas encore listé
+dans le filigrane.txt de son dossier, puis met cette liste à jour (une seule fois par photo).
 """
 import os, sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DOSSIER = os.path.join(RACINE, "realisations", "img")
-LISTE = os.path.join(DOSSIER, "filigrane.txt")
+DOSSIERS = [os.path.join(RACINE, "realisations", "img"), os.path.join(RACINE, "blocs", "img")]
 POLICE = os.path.join(RACINE, "scripts", "fonts", "DejaVuSerif.ttf")
 TEXTE = "© AtelierBokay"
 
@@ -31,23 +30,27 @@ def filigraner(chemin):
     out = Image.alpha_composite(Image.alpha_composite(im.convert("RGBA"), ombre), calque).convert("RGB")
     out.save(chemin, "JPEG", quality=88, optimize=True)
 
-def main():
-    if not os.path.isdir(DOSSIER):
-        print("ok 0"); return
+def traiter(dossier):
+    if not os.path.isdir(dossier):
+        return 0
+    liste = os.path.join(dossier, "filigrane.txt")
     deja = set()
-    if os.path.exists(LISTE):
-        deja = {l.strip() for l in open(LISTE, encoding="utf-8") if l.strip()}
-    photos = sorted(f for f in os.listdir(DOSSIER) if f.lower().endswith(".jpg"))
+    if os.path.exists(liste):
+        deja = {l.strip() for l in open(liste, encoding="utf-8") if l.strip()}
+    photos = sorted(f for f in os.listdir(dossier) if f.lower().endswith(".jpg"))
     n = 0
     for f in photos:
         if f in deja: continue
         try:
-            filigraner(os.path.join(DOSSIER, f)); n += 1
+            filigraner(os.path.join(dossier, f)); n += 1
         except Exception as e:
             print("erreur", f, e, file=sys.stderr); sys.exit(1)
-    with open(LISTE, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(f for f in photos) + ("\n" if photos else ""))
-    print("ok", n)
+    with open(liste, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(photos) + ("\n" if photos else ""))
+    return n
+
+def main():
+    print("ok", sum(traiter(d) for d in DOSSIERS))
 
 if __name__ == "__main__":
     main()
