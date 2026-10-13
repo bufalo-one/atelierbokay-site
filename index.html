@@ -860,7 +860,18 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
     if(im){ e.preventDefault(); if(store&&db) openLibrary(im); else pickImage(im); return; }
     if(e.target.closest('[data-e]') && e.target.closest('a')) e.preventDefault();
   }
-  function onKey(e){ if(editing && e.key==='Enter' && e.target.closest('[data-e]')) e.preventDefault(); }
+  function onKey(e){
+    if(!(editing && e.key==='Enter' && !e.isComposing && e.target.closest('[data-e]'))) return;
+    e.preventDefault();
+    var s=window.getSelection(); if(!s||!s.rangeCount) return;
+    var r=s.getRangeAt(0); r.deleteContents();
+    var br=document.createElement('br'); r.insertNode(br);
+    var host=br.parentNode.closest('[data-e]'), n=br, last=true;
+    while(n&&n!==host){ var sib=n.nextSibling; while(sib&&sib.nodeType===3&&!sib.nodeValue.length) sib=sib.nextSibling; if(sib){ last=false; break; } n=n.parentNode; }
+    if(last) br.parentNode.insertBefore(document.createElement('br'),br.nextSibling);
+    var r2=document.createRange(); r2.setStartAfter(br); r2.collapse(true); s.removeAllRanges(); s.addRange(r2);
+    msg('Retour à la ligne ajouté. Pensez à enregistrer.');
+  }
   function onPaste(e){
     if(!editing || !e.target.closest('[data-e]')) return;
     e.preventDefault();
