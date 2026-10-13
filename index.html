@@ -700,7 +700,7 @@ header .logo-img,footer .logo-img{background:transparent!important}
     if(!isNew){ var del=el('button','pj-btn danger','Supprimer le projet'); del.type='button'; left.appendChild(del);
       del.onclick=function(){
         if(!del.classList.contains('sure')){ del.classList.add('sure'); del.textContent='Confirmer la suppression'; setTimeout(function(){ if(del.isConnected){ del.classList.remove('sure'); del.textContent='Supprimer le projet'; } },4000); return; }
-        del.disabled=true; db.collection('projets').doc(pr.id).delete().then(publish).then(function(ok){ box.remove(); flash(ok?'Projet supprimé. Le site en ligne sera mis à jour d’ici 2 à 3 minutes.':'Projet supprimé.'); }).catch(function(){ del.disabled=false; note.textContent='La suppression a échoué. Réessayez.'; });
+        if(!pr.id){ note.textContent='Suppression impossible : rechargez la page et réessayez.'; return; } del.disabled=true; db.collection('projets').doc(pr.id).delete().then(publish).then(function(ok){ box.remove(); flash(ok?'Projet supprimé. Le site en ligne sera mis à jour d’ici 2 à 3 minutes.':'Projet supprimé.'); }).catch(function(){ del.disabled=false; note.textContent='La suppression a échoué. Réessayez.'; });
       };
     }
     acts.appendChild(left); acts.appendChild(right); p.appendChild(acts);
@@ -709,7 +709,7 @@ header .logo-img,footer .logo-img{background:transparent!important}
       if(!String(data.titre||'').trim()){ note.textContent='Donnez un nom au projet avant d’enregistrer.'; return; }
       if(!data.photos.length){ note.textContent='Ajoutez au moins une image.'; return; }
       save.disabled=true; save.textContent='Enregistrement…';
-      var id=pr?pr.id:('p'+Date.now().toString(36));
+      var id=(pr&&pr.id)?pr.id:('p'+Date.now().toString(36));
       var doc={titre:String(data.titre).trim(),lieu:String(data.lieu||'').trim(),annee:String(data.annee||'').trim(),description:String(data.description||'').trim(),photos:data.photos.map(function(x){return {asset:x.asset,nom:x.nom||''};}),couverture:data.couverture||0,ordre:pr&&pr.ordre?pr.ordre:Date.now(),modifie:new Date().toISOString()};
       db.collection('projets').doc(id).set(doc).then(publish).then(function(ok){
         box.remove(); flash(ok?'Projet enregistré. Il sera visible sur atelierbokay.com d’ici 2 à 3 minutes.':'Projet enregistré. Il sera publié sur atelierbokay.com lors de la prochaine mise à jour.');
@@ -740,7 +740,7 @@ header .logo-img,footer .logo-img{background:transparent!important}
     owner=!!store;
     if(owner){ setOwnerUI(); c.use('mcp').then(function(m){ mcp=m; }).catch(function(){}); }
     db.collection('projets').orderBy('ordre','desc').onSnapshot(function(snap){
-      projets=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; x.photos=(x.photos||[]).filter(function(p){return p&&p.asset;}); return x; });
+      projets=snap.docs.map(function(d){ var x=JSON.parse(JSON.stringify(d.data()||{})); x.id=d.id; x.photos=(x.photos||[]).filter(function(p){return p&&p.asset;}); return x; });
       render();
     },function(){ render(); });
   }).catch(loadLive);
