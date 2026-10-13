@@ -1179,4 +1179,19 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
+<style id="ab-protect">
+main img:not(.qr-card img),.pj-card,.pj-stage,.pj-stage img,.pj-thumbs,.pj-thumbs img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
+</style>
+<script id="ab-protect-js">
+(function(){
+  function protege(t){
+    if(!t||!t.closest) return false;
+    if(t.closest('.qr-card,input,textarea,select,[contenteditable="true"]')&&t.tagName!=='IMG') return false;
+    if(t.closest('.qr-card')) return false;
+    return t.tagName==='IMG'||!!t.closest('.pj-card,.pj-stage,.pj-thumbs,.pj-cover,.gallery figure,.hero-visual');
+  }
+  document.addEventListener('contextmenu',function(e){ if(protege(e.target)) e.preventDefault(); },true);
+  document.addEventListener('dragstart',function(e){ if(protege(e.target)) e.preventDefault(); },true);
+})();
+</script>
 <!--/atelierbokay--></body></html>
