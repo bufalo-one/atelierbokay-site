@@ -1,6 +1,43 @@
 {
  "projets": [
   {
+   "id": "pmv6v2rdq",
+   "titre": "Cuisine à l'ancienne",
+   "lieu": "Banlieue Ouest Lyon",
+   "annee": "2026",
+   "description": "Les clients sont, un couple de la quarantaine, résidant dans la banlieue Ouest de l'agglomération lyonnaise. \nIls souhaitent rénover leur cuisine dans un style \"à l'ancienne\". \nLe cahier des charges est : \n- 4 places assises\n- Frigidaire- congélateur\n- Piano de cuisson ou plaques encastrées \n- Hotte \n- Four traditionnel, four vapeur, micro onde, 1 tiroir chauffant\n- Lave vaisselle \n- Cave à vin \n- Evier en pierre \n- Plan de travail avec billot \nNotre proposition des matériaux et mobilier\n- mobilier : ilot central, bois teinté peint ou laqué, 1 Timbre d'office\n- sol : carrelage, pierre, parquet\n- mur : boiserie, peinture, miroir, carrelage\n- plafond : moulure\n- décorum : lustre, led, crédence, marbre, carreaux",
+   "couverture": 5,
+   "photos": [
+    {
+     "src": "realisations/img/77209ac6d686751d16128f8b9b34cfd6.jpg"
+    },
+    {
+     "src": "realisations/img/39dc8410526c393f8a28377d3dc76cea.jpg"
+    },
+    {
+     "src": "realisations/img/1ae22d4ed0cb163dca2809633d67b239.jpg"
+    },
+    {
+     "src": "realisations/img/c233b77c07c459318c059d179af49e5a.jpg"
+    },
+    {
+     "src": "realisations/img/a3f92ccf3f2dfcfea10e7706f26ea02c.jpg"
+    },
+    {
+     "src": "realisations/img/9c18c7cbac18ff576765cbf90fef0602.jpg"
+    },
+    {
+     "src": "realisations/img/1d8b618dbebe63ef4b859556fd4136a9.jpg"
+    },
+    {
+     "src": "realisations/img/99c02fcc9d1c2edc30de12d6e875c446.jpg"
+    },
+    {
+     "src": "realisations/img/5ef6db39d3eeaf1f053c77bf9aa346d6.jpg"
+    }
+   ]
+  },
+  {
    "id": "pmv6ty9u4",
    "titre": "Les pieds de palétuviers",
    "lieu": "Trois Ilets Martinique",
