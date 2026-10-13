@@ -376,6 +376,12 @@ header .logo-img,footer .logo-img{background:transparent!important}
     <div class="head"><p class="eyebrow">Réalisations &amp; inspirations</p><h1>Des lieux singuliers<em>commencent par une intention.</em></h1></div>
     <div class="right"><p>Cette galerie présente des univers d'inspiration. Les projets réalisés pourront être ajoutés ici au fil de votre portfolio.</p><a class="button-dark" href="#contact">Parlons de votre projet <span>↗</span></a></div>
   </div></section>
+  <section class="pj-section" id="pj-section" style="padding-top:20px" hidden=""><div class="shell">
+    <div class="split"><div class="head"><p class="eyebrow">Projets</p><h2>Nos réalisations<em>dossier par dossier.</em></h2></div>
+    <p class="right">Cliquez sur un projet pour découvrir toutes ses images.</p></div>
+    <div class="pj-tools" id="pj-tools"></div>
+    <div class="pj-grid" id="pj-grid"></div>
+  </div></section>
   <section style="padding-top:20px"><div class="shell">
     <div class="split"><div class="head"><p class="eyebrow">Univers visuels</p><h2>Les matières<em>comme point de départ.</em></h2></div>
     <p class="right">Des couleurs aux textures, ces ambiances ouvrent des pistes créatives à explorer ensemble.</p></div>
@@ -515,6 +521,232 @@ header .logo-img,footer .logo-img{background:transparent!important}
 })();
 </script>
 <style>
+/* Projets (onglet Réalisations) */
+.pj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:40px}
+.pj-grid>*{min-width:0}
+@media (max-width:960px){.pj-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.pj-grid{grid-template-columns:1fr}}
+.pj-card{position:relative;background:var(--paper);border:1px solid var(--line);cursor:pointer;display:grid;transition:box-shadow .2s}
+.pj-card:hover,.pj-card:focus-visible{box-shadow:var(--shadow)}
+.pj-cover{aspect-ratio:4/3;background:var(--sage) center/cover no-repeat}
+.pj-body{padding:18px 20px 22px;display:grid;gap:6px}
+.pj-title{font-family:var(--serif);font-size:1.55rem;line-height:1.1;color:var(--green-ink)}
+.pj-meta{font-size:.78rem;color:var(--muted);letter-spacing:.02em}
+.pj-meta b{color:var(--terracotta);font-weight:600}
+.pj-tools{display:none;margin-top:28px;gap:10px;flex-wrap:wrap;align-items:center}
+.pj-tools .pj-note{font-size:.85rem}
+.pj-owner-on .pj-tools{display:flex}
+.pj-btn{font:500 .84rem var(--sans);padding:11px 16px;border:1px solid var(--green);background:var(--green);color:var(--on-green);cursor:pointer}
+.pj-btn.alt{background:var(--paper);color:var(--green)}
+.pj-btn.danger{background:var(--paper);color:#a3452a;border-color:#a3452a}
+.pj-btn.danger.sure{background:#a3452a;color:#fff}
+.pj-btn:hover:not(:disabled){filter:brightness(.95)}
+.pj-btn:disabled{opacity:.6;cursor:wait}
+.pj-edit{display:none;position:absolute;top:10px;right:10px;z-index:2;font:500 .78rem var(--sans);padding:8px 12px;border:1px solid var(--green);background:var(--paper);color:var(--green);cursor:pointer}
+.pj-owner-on .pj-edit{display:block}
+.pj-modal{position:fixed;inset:0;z-index:90;background:#16231c;color:#f6efe4;display:flex;flex-direction:column;font-family:var(--sans)}
+.pj-modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:18px clamp(16px,4vw,32px)}
+.pj-modal-head h3{font-family:var(--serif);font-weight:500;font-size:clamp(1.5rem,3vw,2.2rem);color:#f6efe4;margin:0}
+.pj-modal-head small{display:block;color:#e6a77f;font-size:.8rem;margin-top:4px}
+.pj-x{background:none;border:1px solid rgba(246,239,228,.5);color:#f6efe4;font-size:1.3rem;width:44px;height:44px;cursor:pointer;flex:none}
+.pj-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;padding:0 56px}
+@media (max-width:600px){.pj-stage{padding:0 8px}.pj-nav{width:38px;height:38px;background:rgba(22,35,28,.7)}}
+.pj-stage img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.pj-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(246,239,228,.12);border:1px solid rgba(246,239,228,.4);color:#f6efe4;width:44px;height:44px;font-size:1.3rem;cursor:pointer}
+.pj-nav.prev{left:8px}.pj-nav.next{right:8px}
+.pj-foot{padding:14px clamp(16px,4vw,32px) 18px;display:grid;gap:12px}
+.pj-desc{white-space:pre-line;font-size:.92rem;line-height:1.6;color:rgba(246,239,228,.85);max-width:80ch;max-height:22vh;overflow:auto;margin:0}
+.pj-count{font-size:.75rem;color:#e6a77f}
+.pj-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.pj-thumbs button{flex:none;width:72px;height:54px;padding:0;border:2px solid transparent;background:#000 center/cover no-repeat;cursor:pointer;opacity:.6}
+.pj-thumbs button.on{border-color:#e6a77f;opacity:1}
+.pj-form{position:fixed;inset:0;z-index:95;background:rgba(30,56,45,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:var(--sans)}
+.pj-form-panel{background:var(--paper);color:var(--ink);width:min(820px,100%);max-height:calc(100vh - 32px);overflow:auto;border:1px solid var(--line);box-shadow:0 18px 55px rgba(0,0,0,.25);padding:22px;display:grid;gap:14px}
+.pj-form-panel h3{font-family:var(--serif);font-weight:500;font-size:1.8rem;color:var(--green);margin:0}
+.pj-form-panel label{display:grid;gap:6px;font-size:.84rem;font-weight:500}
+.pj-form-panel input,.pj-form-panel textarea{font:inherit;font-size:.95rem;padding:11px 12px;border:1px solid var(--line);background:#fff;color:var(--ink);width:100%}
+.pj-form-panel textarea{min-height:130px;resize:vertical}
+.pj-row{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+@media (max-width:600px){.pj-row{grid-template-columns:1fr}}
+.pj-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.pj-ph{border:1px solid var(--line);background:#fff;padding:6px;display:grid;gap:6px}
+.pj-ph.cover{border-color:var(--terracotta);box-shadow:0 0 0 2px var(--terracotta)}
+.pj-ph div{aspect-ratio:4/3;background:var(--sage) center/cover no-repeat}
+.pj-ph span{display:flex;gap:4px;flex-wrap:wrap}
+.pj-ph button{font:500 .72rem var(--sans);padding:5px 7px;border:1px solid var(--line);background:var(--paper);color:var(--green);cursor:pointer}
+.pj-ph button:disabled{opacity:.35;cursor:default}
+.pj-note{font-size:.82rem;color:var(--muted);margin:0}
+.pj-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between}
+.pj-actions div{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+<script>
+(function(){
+  var TRIG='trig_01Xs8393t3TwDoykT89mBzpg';
+  var section=document.getElementById('pj-section'), grid=document.getElementById('pj-grid'), tools=document.getElementById('pj-tools');
+  if(!section||!grid) return;
+  var projets=[], db=null, store=null, mcp=null, owner=false, live=false;
+
+  function el(tag,cls,text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+  function photoUrl(p){ return live ? p.src : '/_blob/'+p.asset; }
+  function bg(node,url){ node.style.backgroundImage='url("'+String(url).replace(/"/g,'%22')+'")'; }
+  function coverOf(pr){ var ph=pr.photos||[]; return ph[Math.min(Math.max(pr.couverture||0,0),ph.length-1)]; }
+
+  function render(){
+    grid.innerHTML='';
+    section.hidden=!(projets.length||owner);
+    if(!projets.length && owner){ var n=el('div','pj-note','Aucun projet pour l’instant. Cliquez sur « Nouveau projet » pour créer votre premier dossier.'); grid.appendChild(n); }
+    projets.forEach(function(pr){
+      var card=el('div','pj-card'); card.tabIndex=0; card.setAttribute('role','button'); card.setAttribute('aria-label','Voir le projet '+(pr.titre||''));
+      var cv=el('div','pj-cover'); var c=coverOf(pr); if(c) bg(cv,photoUrl(c));
+      var body=el('div','pj-body'); body.appendChild(el('div','pj-title',pr.titre||'Projet'));
+      var meta=el('div','pj-meta'); var bits=[pr.lieu,pr.annee].filter(Boolean).join(' · ');
+      if(bits){ meta.appendChild(document.createTextNode(bits+' · ')); }
+      var nb=(pr.photos||[]).length; meta.appendChild(el('b',null,nb+(nb>1?' images':' image')));
+      body.appendChild(meta);
+      card.appendChild(cv); card.appendChild(body);
+      card.onclick=function(){ openViewer(pr,0); };
+      card.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openViewer(pr,0); } };
+      if(owner){ var ed=el('button','pj-edit','Modifier'); ed.type='button'; ed.onclick=function(e){ e.stopPropagation(); openForm(pr); }; card.appendChild(ed); }
+      grid.appendChild(card);
+    });
+  }
+
+  /* Visionneuse */
+  function openViewer(pr,start){
+    var ph=pr.photos||[]; if(!ph.length) return;
+    var i=start||0, m=el('div','pj-modal'); m.setAttribute('role','dialog'); m.setAttribute('aria-label',pr.titre||'Projet');
+    var head=el('div','pj-modal-head'), ttl=el('div'); ttl.appendChild(el('h3',null,pr.titre||'Projet'));
+    var sub=[pr.lieu,pr.annee].filter(Boolean).join(' · '); if(sub) ttl.appendChild(el('small',null,sub));
+    var x=el('button','pj-x','×'); x.type='button'; x.setAttribute('aria-label','Fermer');
+    head.appendChild(ttl); head.appendChild(x);
+    var stage=el('div','pj-stage'), img=el('img'); stage.appendChild(img);
+    var pv=el('button','pj-nav prev','‹'), nx=el('button','pj-nav next','›'); pv.type=nx.type='button'; pv.setAttribute('aria-label','Image précédente'); nx.setAttribute('aria-label','Image suivante');
+    if(ph.length>1){ stage.appendChild(pv); stage.appendChild(nx); }
+    var foot=el('div','pj-foot'), count=el('div','pj-count'), thumbs=el('div','pj-thumbs');
+    foot.appendChild(count);
+    if(ph.length>1) foot.appendChild(thumbs);
+    if(pr.description) foot.appendChild(el('p','pj-desc',pr.description));
+    ph.forEach(function(p,k){ var t=el('button'); t.type='button'; t.setAttribute('aria-label','Image '+(k+1)); bg(t,photoUrl(p)); t.onclick=function(){ show(k); }; thumbs.appendChild(t); });
+    function show(k){ i=(k+ph.length)%ph.length; img.src=photoUrl(ph[i]); img.alt=(pr.titre||'Projet')+' — image '+(i+1); count.textContent=(i+1)+' / '+ph.length; [].forEach.call(thumbs.children,function(t,j){ t.classList.toggle('on',j===i); }); }
+    function close(){ document.removeEventListener('keydown',key); m.remove(); document.body.style.overflow=''; }
+    function key(e){ if(e.key==='Escape') close(); else if(e.key==='ArrowLeft') show(i-1); else if(e.key==='ArrowRight') show(i+1); }
+    pv.onclick=function(){ show(i-1); }; nx.onclick=function(){ show(i+1); }; x.onclick=close;
+    var sx=null; stage.addEventListener('touchstart',function(e){ sx=e.touches[0].clientX; },{passive:true});
+    stage.addEventListener('touchend',function(e){ if(sx==null) return; var d=e.changedTouches[0].clientX-sx; if(Math.abs(d)>40) show(i+(d<0?1:-1)); sx=null; });
+    m.appendChild(head); m.appendChild(stage); m.appendChild(foot);
+    document.body.appendChild(m); document.body.style.overflow='hidden'; document.addEventListener('keydown',key); show(i); x.focus();
+  }
+
+  /* Espace propriétaire : création et modification */
+  function shrinkToJpeg(file){
+    return createImageBitmap(file).then(function(bm){
+      var max=1800,s=Math.min(1,max/Math.max(bm.width,bm.height));
+      var c=document.createElement('canvas'); c.width=Math.round(bm.width*s); c.height=Math.round(bm.height*s);
+      var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(bm,0,0,c.width,c.height);
+      return new Promise(function(res,rej){ c.toBlob(function(b){ b?res(b):rej(new Error('conversion')); },'image/jpeg',0.85); });
+    });
+  }
+  function publish(){
+    if(!mcp) return Promise.resolve(false);
+    return mcp.callTool('Claude Code Remote','fire_trigger',{trigger_id:TRIG,text:'Déclenché par Projets'}).then(function(){return true;}).catch(function(){return false;});
+  }
+  function openForm(pr){
+    var isNew=!pr, data=pr?JSON.parse(JSON.stringify(pr)):{titre:'',lieu:'',annee:'',description:'',photos:[],couverture:0};
+    var box=el('div','pj-form'), p=el('div','pj-form-panel'); p.setAttribute('role','dialog');
+    p.appendChild(el('h3',null,isNew?'Nouveau projet':'Modifier le projet'));
+    function field(label,key,ph,area){ var l=el('label',null,label), f=el(area?'textarea':'input'); f.value=data[key]||''; if(ph) f.placeholder=ph; f.oninput=function(){ data[key]=f.value; }; l.appendChild(f); return l; }
+    p.appendChild(field('Nom du projet *','titre','Ex. : Rénovation d’un appartement haussmannien'));
+    var row=el('div','pj-row'); row.appendChild(field('Lieu','lieu','Ex. : Lyon 6e')); row.appendChild(field('Année','annee','Ex. : 2026')); p.appendChild(row);
+    p.appendChild(field('Texte de présentation','description','Le contexte, la demande du client, vos choix (matières, couleurs, agencement)…',true));
+    var phHead=el('div','pj-actions'); phHead.appendChild(el('strong',null,'Images du projet'));
+    var add=el('button','pj-btn','Ajouter des photos'); add.type='button'; phHead.appendChild(add); p.appendChild(phHead);
+    var note=el('p','pj-note','Photos, rendus 3D, plans… La photo encadrée en orange sert de couverture.'); p.appendChild(note);
+    var list=el('div','pj-photos'); p.appendChild(list);
+    function drawPhotos(){
+      list.innerHTML='';
+      if(data.couverture>=data.photos.length) data.couverture=0;
+      data.photos.forEach(function(ph,k){
+        var c=el('div','pj-ph'+(k===data.couverture?' cover':'')), im=el('div'); bg(im,'/_blob/'+ph.asset); c.appendChild(im);
+        var bar=el('span');
+        function b(t,title,fn,dis){ var x=el('button',null,t); x.type='button'; x.title=title; x.setAttribute('aria-label',title); x.disabled=!!dis; x.onclick=fn; bar.appendChild(x); }
+        b('★','Mettre en couverture',function(){ data.couverture=k; drawPhotos(); },k===data.couverture);
+        b('←','Déplacer avant',function(){ var t=data.photos.splice(k,1)[0]; data.photos.splice(k-1,0,t); if(data.couverture===k) data.couverture=k-1; else if(data.couverture===k-1) data.couverture=k; drawPhotos(); },k===0);
+        b('→','Déplacer après',function(){ var t=data.photos.splice(k,1)[0]; data.photos.splice(k+1,0,t); if(data.couverture===k) data.couverture=k+1; else if(data.couverture===k+1) data.couverture=k; drawPhotos(); },k===data.photos.length-1);
+        b('Retirer','Retirer cette image',function(){ data.photos.splice(k,1); if(data.couverture>k) data.couverture--; drawPhotos(); });
+        c.appendChild(bar); list.appendChild(c);
+      });
+      if(!data.photos.length) list.appendChild(el('p','pj-note','Aucune image pour l’instant.'));
+    }
+    add.onclick=function(){
+      var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true;
+      inp.onchange=function(){
+        var files=[].slice.call(inp.files||[]); if(!files.length) return;
+        add.disabled=true; var done=0;
+        files.reduce(function(pr,f){ return pr.then(function(){
+          note.textContent='Import en cours… '+(done+1)+' / '+files.length;
+          return shrinkToJpeg(f).then(function(blob){ return store.upload(blob,{type:'image/jpeg'}); }).then(function(r){ data.photos.push({asset:r.id,nom:f.name}); done++; drawPhotos(); });
+        }); },Promise.resolve()).then(function(){
+          add.disabled=false; note.textContent=done+(done>1?' images ajoutées.':' image ajoutée.')+' La photo encadrée en orange sert de couverture.';
+        }).catch(function(err){
+          add.disabled=false; var c=err&&err.code;
+          note.textContent=c==='too_large'?'Une image est trop lourde (20 Mo maximum).':c==='quota_or_state'?'L’espace de stockage est plein.':'Une image n’a pas pu être importée (format non reconnu ?). Réessayez avec une photo JPG ou PNG.';
+        });
+      };
+      inp.click();
+    };
+    var acts=el('div','pj-actions'), left=el('div'), right=el('div');
+    var save=el('button','pj-btn','Enregistrer le projet'), cancel=el('button','pj-btn alt','Annuler'); save.type=cancel.type='button';
+    right.appendChild(cancel); right.appendChild(save);
+    if(!isNew){ var del=el('button','pj-btn danger','Supprimer le projet'); del.type='button'; left.appendChild(del);
+      del.onclick=function(){
+        if(!del.classList.contains('sure')){ del.classList.add('sure'); del.textContent='Confirmer la suppression'; setTimeout(function(){ if(del.isConnected){ del.classList.remove('sure'); del.textContent='Supprimer le projet'; } },4000); return; }
+        del.disabled=true; db.collection('projets').doc(pr.id).delete().then(publish).then(function(ok){ box.remove(); flash(ok?'Projet supprimé. Le site en ligne sera mis à jour d’ici 2 à 3 minutes.':'Projet supprimé.'); }).catch(function(){ del.disabled=false; note.textContent='La suppression a échoué. Réessayez.'; });
+      };
+    }
+    acts.appendChild(left); acts.appendChild(right); p.appendChild(acts);
+    cancel.onclick=function(){ box.remove(); };
+    save.onclick=function(){
+      if(!String(data.titre||'').trim()){ note.textContent='Donnez un nom au projet avant d’enregistrer.'; return; }
+      if(!data.photos.length){ note.textContent='Ajoutez au moins une image.'; return; }
+      save.disabled=true; save.textContent='Enregistrement…';
+      var id=pr?pr.id:('p'+Date.now().toString(36));
+      var doc={titre:String(data.titre).trim(),lieu:String(data.lieu||'').trim(),annee:String(data.annee||'').trim(),description:String(data.description||'').trim(),photos:data.photos.map(function(x){return {asset:x.asset,nom:x.nom||''};}),couverture:data.couverture||0,ordre:pr&&pr.ordre?pr.ordre:Date.now(),modifie:new Date().toISOString()};
+      db.collection('projets').doc(id).set(doc).then(publish).then(function(ok){
+        box.remove(); flash(ok?'Projet enregistré. Il sera visible sur atelierbokay.com d’ici 2 à 3 minutes.':'Projet enregistré. Il sera publié sur atelierbokay.com lors de la prochaine mise à jour.');
+      }).catch(function(){ save.disabled=false; save.textContent='Enregistrer le projet'; note.textContent='L’enregistrement a échoué. Réessayez.'; });
+    };
+    box.addEventListener('click',function(e){ if(e.target===box) box.remove(); });
+    box.appendChild(p); document.body.appendChild(box); drawPhotos();
+  }
+  function flash(t){ var n=tools.querySelector('.pj-note'); if(n) n.textContent=t; }
+
+  function setOwnerUI(){
+    tools.innerHTML='';
+    var b=el('button','pj-btn','+ Nouveau projet'); b.type='button'; b.onclick=function(){ openForm(null); };
+    tools.appendChild(b); tools.appendChild(el('div','pj-note','Créez un dossier par projet : nom, lieu, texte et photos.'));
+    var sync=function(){ section.classList.toggle('pj-owner-on',document.body.classList.contains('ab-editing')); };
+    new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']}); sync();
+  }
+
+  function loadLive(){
+    live=true;
+    fetch('realisations/projets.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():{projets:[]}; }).then(function(j){ projets=(j&&j.projets)||[]; render(); }).catch(function(){ render(); });
+  }
+  var c=window.claude;
+  if(!c||typeof c.use!=='function'){ loadLive(); return; }
+  Promise.all([c.use('db').catch(function(){return null;}),c.use('assets').catch(function(){return null;})]).then(function(r){
+    db=r[0]; store=r[1];
+    if(!db){ loadLive(); return; }
+    owner=!!store;
+    if(owner){ setOwnerUI(); c.use('mcp').then(function(m){ mcp=m; }).catch(function(){}); }
+    db.collection('projets').orderBy('ordre','desc').onSnapshot(function(snap){
+      projets=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; x.photos=(x.photos||[]).filter(function(p){return p&&p.asset;}); return x; });
+      render();
+    },function(){ render(); });
+  }).catch(loadLive);
+})();
+</script>
+<style>
 /* Espace propriétaire (visible uniquement pour le propriétaire, dans claude.ai) */
 .ab-owner{position:fixed;left:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:calc(100% - 110px);font-family:"DM Sans",Arial,sans-serif}
 .ab-owner button{font:500 .84rem "DM Sans",Arial,sans-serif;padding:11px 16px;border:1px solid #284737;background:#284737;color:#f6efe4;cursor:pointer}
@@ -596,6 +828,8 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
   function buildDocument(){
     var doc=document.implementation.createHTMLDocument('');
     doc.body.innerHTML=source;
+    ['pj-tools','pj-grid'].forEach(function(id){ var x=doc.getElementById(id); if(x) x.innerHTML=''; });
+    var pjs=doc.getElementById('pj-section'); if(pjs){ pjs.setAttribute('hidden',''); pjs.classList.remove('pj-owner-on'); }
     tag(doc.body);
     document.querySelectorAll('[data-e]').forEach(function(el){
       var t=doc.body.querySelector('[data-e="'+el.getAttribute('data-e')+'"]');
