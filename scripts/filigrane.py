@@ -16,7 +16,7 @@ TEXTE = "© AtelierBokay"
 def filigraner(chemin):
     im = ImageOps.exif_transpose(Image.open(chemin)).convert("RGB")
     w, h = im.size
-    taille = max(14, int(min(w, h) * 0.045))
+    taille = max(14, int(min(w, h) * 0.06))
     police = ImageFont.truetype(POLICE, taille)
     calque = Image.new("RGBA", im.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(calque)
