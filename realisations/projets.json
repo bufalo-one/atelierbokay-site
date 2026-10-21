@@ -6,7 +6,7 @@
    "lieu": "Antananarivo Madagascar",
    "annee": "2026",
    "description": "Aménagement dans les combles, sur maison de plein pied. La cliente souhaite rénover les combles pour un logement locatif.\nNous proposons un logement de deux pièces, qui se compose d'une chambre et salle de bain privatisée avec toilettes intégrées, une salle d'eau et sanitaire pour ses invités, un salon avec cuisine intégrée et terrasse sur le reste de la surface. Un coin cuisine et salon sur la terrasse est aussi prévue. \nl'acces au logement se fera par l'escalier arrière.",
-   "couverture": 4,
+   "couverture": 5,
    "photos": [
     {
      "src": "realisations/img/633c56473a2118aa47ca3ec3e26f6a57.jpg"
@@ -19,6 +19,9 @@
     },
     {
      "src": "realisations/img/421448e54543f2cb1414fdd6c01c1698.jpg"
+    },
+    {
+     "src": "realisations/img/b8687e9a540c84c2aa0474f11d946ba6.jpg"
     },
     {
      "src": "realisations/img/61de1803853a45b9ba82be9f1d152788.jpg"
