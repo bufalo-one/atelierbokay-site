@@ -873,10 +873,12 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
 .ab-owner .ab-fmt button:hover{background:#bd663b;border-color:#bd663b;color:#fff}
 /* Blocs ajoutés depuis l'espace propriétaire */
 .ab-bloc{position:relative}
-.ab-bloc .split>.ab-bloc-fig{align-self:center}
-section[data-align="top"] .split>*{align-self:start!important}
-section[data-align="center"] .split>*{align-self:center!important}
-section[data-align="bottom"] .split>*{align-self:end!important}
+@media (min-width:861px){
+.ab-bloc .split{align-items:stretch}
+.ab-bloc .split>.ab-bloc-fig{align-self:stretch!important;display:flex;flex-direction:column;margin-top:0!important;top:0!important}
+.ab-bloc .split>.ab-bloc-fig>img{flex:1 1 auto;height:100%;min-height:260px;aspect-ratio:auto!important;object-fit:cover;object-position:center}
+.ab-bloc .split>.ab-bloc-fig>figcaption{flex:none}
+}
 @media (max-width:860px){.ab-nudged{left:0!important;margin-top:0!important}}
 .ab-bloc .ab-stack>*+*{margin-top:18px}
 .ab-bloc p:not(.eyebrow){color:#656b61;max-width:70ch}
@@ -1336,7 +1338,6 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
       b('↑ Monter','Monter le bloc',function(){ moveBloc(el,-1); });
       b('↓ Descendre','Descendre le bloc',function(){ moveBloc(el,1); });
       if(splitKids(splitOf(el)).length===2) b('⇄ Inverser','Inverser la gauche et la droite',function(){ swapSides(el); });
-      if(splitKids(splitOf(el)).length===2){ var al=alignOf(el), lab='Haut'; ALIGNS.forEach(function(a){ if(a[0]===al) lab=a[1]; }); b('⇕ '+lab,'Aligner les deux colonnes : haut, centre ou bas',function(x){ cycleAlign(el,x); }); }
       if(el.classList.contains('ab-bloc')) b('Supprimer','Supprimer le bloc',function(x){
         if(!x.classList.contains('sure')){ x.classList.add('sure'); x.textContent='Confirmer la suppression'; setTimeout(function(){ if(x.isConnected){ x.classList.remove('sure'); x.textContent='Supprimer'; } },4000); return; }
         deleteBloc(el);
