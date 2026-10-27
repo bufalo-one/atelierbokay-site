@@ -1434,11 +1434,14 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
   function movesOf(el){
     var P=el.parentNode, k=kidsOf(P), i=k.indexOf(el), m={up:null,down:null,left:null,right:null};
     var sec=el.closest('main .page > section');
+    var nud=parseInt(el.style.marginTop,10)||0;
     if(isRow(P)){
       if(k[i-1]) m.left=[k[i-1],false]; if(k[i+1]) m.right=[k[i+1],true];
+      m.up=nud>0?{n:-40}:null; m.down={n:40};
       return m;
     }
-    if(k[i-1]) m.up=[k[i-1],false]; if(k[i+1]) m.down=[k[i+1],true];
+    m.up=nud>0?{n:-40}:(k[i-1]?[k[i-1],false]:null);
+    m.down=k[i+1]?[k[i+1],true]:{n:40};
     var x=P; while(x&&x!==sec&&x.parentNode&&!isRow(x.parentNode)) x=x.parentNode;
     if(x&&x!==sec&&x.parentNode&&isRow(x.parentNode)){
       var cols=kidsOf(x.parentNode), c=cols.indexOf(x);
@@ -1449,10 +1452,18 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     }
     return m;
   }
+  function nudgeEl(el,delta){
+    var page=el.closest('.page'), d=srcDoc(), sp=d.getElementById(page.id), pe=pathOf(el,page), se=sp&&pe&&resolvePath(sp,pe);
+    if(!se||se.tagName!==el.tagName){ msg('Déplacement impossible : enregistrez, puis réessayez.'); return; }
+    var v=Math.max(0,Math.min(600,(parseInt(el.style.marginTop,10)||0)+delta));
+    [el,se].forEach(function(n){ if(v) n.style.marginTop=v+'px'; else { n.style.removeProperty('margin-top'); if(!n.getAttribute('style')) n.removeAttribute('style'); } });
+    source=d.body.innerHTML; retag();
+    msg(v?'Élément décalé vers le bas ('+v+' px). Pensez à enregistrer.':'Élément remis à sa place. Pensez à enregistrer.');
+  }
   function stepEl(el,dir){
     var t=movesOf(el)[dir];
     if(!t){ msg('Impossible de déplacer cet élément dans ce sens.'); return; }
-    moveEl(el,t[0],t[1]);
+    if(t.n) nudgeEl(el,t.n); else moveEl(el,t[0],t[1]);
     if(el.isConnected) showHand(el);
   }
   function showHand(u){
