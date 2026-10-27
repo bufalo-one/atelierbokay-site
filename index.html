@@ -1436,9 +1436,9 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     if(hand) return;
     hbox=document.createElement('div'); hbox.className='ab-el-box ab-ui'; document.body.appendChild(hbox);
     hand=document.createElement('button'); hand.type='button'; hand.className='ab-el-hand ab-ui'; hand.textContent='⠿';
-    hand.title='Maintenir et faire glisser pour déplacer cet élément'; hand.setAttribute('aria-label','Déplacer cet élément');
+    hand.title='Maintenir et faire glisser pour placer cet élément où vous voulez (Maj + glisser : changer l’ordre)'; hand.setAttribute('aria-label','Déplacer cet élément');
     hand.addEventListener('mousedown',function(e){ e.preventDefault(); });
-    hand.addEventListener('pointerdown',function(e){ if(handFor) dragEl(handFor,e,hand); });
+    hand.addEventListener('pointerdown',function(e){ if(!handFor) return; if(e.shiftKey) dragEl(handFor,e,hand); else freeDrag(handFor,e); });
     document.body.appendChild(hand);
     hand2=document.createElement('button'); hand2.type='button'; hand2.className='ab-el-hand ab-el-hand2 ab-ui'; hand2.textContent='⠿⠿';
     hand2.title='Maintenir et faire glisser pour déplacer tout le cadre (la liste entière)'; hand2.setAttribute('aria-label','Déplacer tout le cadre');
@@ -1525,6 +1525,34 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     [el,img].forEach(function(n){ if(!n) return; ['margin-top','top','left','position','width','max-width','height','aspect-ratio','object-fit','object-position'].forEach(function(k){ n.style.removeProperty(k); });
       n.classList.remove('ab-sized'); n.classList.remove('ab-nudged'); if(!n.getAttribute('style')) n.removeAttribute('style'); if(!n.className) n.removeAttribute('class'); });
     if(commitStyles(el)) msg('Élément remis à son état d’origine (place, taille et cadrage). Pensez à enregistrer.');
+  }
+  function freeDrag(el,ev){
+    if(ev.button!==undefined&&ev.button!==0) return;
+    ev.preventDefault(); ev.stopPropagation(); elDragging=true;
+    var sx=ev.clientX, sy=ev.clientY, sy0=window.scrollY;
+    var t0=(parseInt(el.style.top,10)||0)+(parseInt(el.style.marginTop,10)||0), l0=parseInt(el.style.left,10)||0;
+    el.style.removeProperty('margin-top');
+    try{ hand.setPointerCapture(ev.pointerId); }catch(e){}
+    document.body.classList.add('ab-drag-on');
+    var lx=sx, ly=sy, raf=0;
+    function apply(){
+      var dy=ly-sy+(window.scrollY-sy0), dx=lx-sx;
+      var t=Math.max(-1500,Math.min(3000,Math.round(t0+dy))), l=Math.max(-1200,Math.min(1200,Math.round(l0+dx)));
+      el.style.position='relative'; el.style.top=t+'px'; el.style.left=l+'px'; el.classList.add('ab-nudged');
+      showHand(el);
+    }
+    function tick(){ var h=window.innerHeight; if(ly<80) window.scrollBy(0,-Math.ceil((80-ly)/5)); else if(ly>h-80) window.scrollBy(0,Math.ceil((ly-(h-80))/5)); apply(); raf=requestAnimationFrame(tick); }
+    function mv(e){ lx=e.clientX; ly=e.clientY; }
+    function up(){
+      cancelAnimationFrame(raf);
+      hand.removeEventListener('pointermove',mv); hand.removeEventListener('pointerup',up); hand.removeEventListener('pointercancel',up);
+      document.body.classList.remove('ab-drag-on'); elDragging=false;
+      if(!(parseInt(el.style.top,10)||0)&&!(parseInt(el.style.left,10)||0)){ el.style.removeProperty('top'); el.style.removeProperty('left'); el.style.removeProperty('position'); el.classList.remove('ab-nudged'); if(!el.getAttribute('style')) el.removeAttribute('style'); }
+      if(commitStyles(el)) msg('Élément placé. Pensez à enregistrer (⟲ pour le remettre à sa place).');
+      if(el.isConnected) showHand(el);
+    }
+    hand.addEventListener('pointermove',mv); hand.addEventListener('pointerup',up); hand.addEventListener('pointercancel',up);
+    raf=requestAnimationFrame(tick);
   }
   function stepEl(el,dir){
     var t=movesOf(el)[dir];
