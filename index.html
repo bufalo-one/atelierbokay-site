@@ -1495,12 +1495,12 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     var tog=document.createElement('button');tog.className='alt ab-ico';tog.textContent=mini?'▴':'▾';tog.title=mini?'Afficher la barre d’outils':'Réduire la barre d’outils';
     tog.onclick=function(){ try{ sessionStorage.setItem('ab-mini',mini?'0':'1'); }catch(e){} render(); };
     bar.appendChild(tog);
-    if(!mini) bar.appendChild(formatBar());
     var save=document.createElement('button');save.textContent='Enregistrer';
     save.onclick=function(){doSave(save);};
     bar.appendChild(save);
+    var add=document.createElement('button');add.className='alt';add.textContent='+ Bloc';add.title='Ajouter un bloc de texte ou de photos';add.onclick=openAddBloc;bar.appendChild(add);
+    if(!mini) bar.appendChild(formatBar());
     if(!mini){
-      var add=document.createElement('button');add.className='alt';add.textContent='+ Bloc';add.title='Ajouter un bloc de texte ou de photos';add.onclick=openAddBloc;bar.appendChild(add);
       if(store&&db){ var lb=document.createElement('button');lb.className='alt';lb.textContent='Images';lb.title="Bibliothèque d'images";lb.onclick=function(){openLibrary(null);};bar.appendChild(lb); }
       var cancel=document.createElement('button');cancel.className='alt';cancel.textContent='Annuler';cancel.title='Revenir au dernier enregistrement';
       cancel.onclick=function(){location.reload();};
