@@ -874,7 +874,7 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
 .ab-owner .ab-fmt button:hover{background:#bd663b;border-color:#bd663b;color:#fff}
 /* Blocs ajoutés depuis l'espace propriétaire */
 .ab-bloc{position:relative}
-@media (max-width:860px){.ab-nudged{left:0!important;top:0!important;margin-top:0!important}.ab-sized{width:auto!important;max-width:100%!important;min-height:0!important}.ab-sized img,img.ab-sized{height:auto!important;aspect-ratio:3/2!important}}
+@media (max-width:860px){.ab-nudged{left:0!important;top:0!important;margin-top:0!important}.ab-sized{width:auto!important;max-width:100%!important;min-height:0!important;margin-bottom:0!important}.ab-sized img,img.ab-sized{height:auto!important;aspect-ratio:3/2!important}}
 .ab-bloc .ab-stack>*+*{margin-top:18px}
 .ab-bloc p:not(.eyebrow){color:#656b61;max-width:70ch}
 .ab-bloc-fig{margin:0;min-width:0}
@@ -1498,12 +1498,14 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
   function startResize(ev){
     var el=handFor; if(!el) return; ev.preventDefault(); ev.stopPropagation(); elDragging=true;
     var img=imgOf(el), r=el.getBoundingClientRect(), ir=img?img.getBoundingClientRect():null, sx=ev.clientX, sy=ev.clientY;
+    var flow=r.height+(parseFloat(el.style.marginBottom)||0);
     try{ sizeH.setPointerCapture(ev.pointerId); }catch(e){}
     function mv(e){
       var w=Math.max(80,Math.min(1400,Math.round(r.width+e.clientX-sx)));
       el.style.width=w+'px'; el.style.maxWidth='none'; el.classList.add('ab-sized');
       if(img){ var h=Math.max(60,Math.min(2000,Math.round(ir.height+e.clientY-sy))); img.style.height=h+'px'; img.style.aspectRatio='auto'; img.style.objectFit='cover'; if(img!==el) img.style.width='100%'; }
       else { var th=Math.max(16,Math.min(3000,Math.round(r.height+e.clientY-sy))); el.style.minHeight=th+'px'; }
+      var mb=Math.round(flow-el.getBoundingClientRect().height); if(mb) el.style.marginBottom=mb+'px'; else el.style.removeProperty('margin-bottom');
       showHand(el);
     }
     function up(){ sizeH.removeEventListener('pointermove',mv); sizeH.removeEventListener('pointerup',up); sizeH.removeEventListener('pointercancel',up); elDragging=false;
@@ -1524,7 +1526,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
   }
   function resetAll(el){
     var img=imgOf(el);
-    [el,img].forEach(function(n){ if(!n) return; ['margin-top','top','left','position','width','max-width','min-height','height','aspect-ratio','object-fit','object-position'].forEach(function(k){ n.style.removeProperty(k); });
+    [el,img].forEach(function(n){ if(!n) return; ['margin-top','margin-bottom','top','left','position','width','max-width','min-height','height','aspect-ratio','object-fit','object-position'].forEach(function(k){ n.style.removeProperty(k); });
       n.classList.remove('ab-sized'); n.classList.remove('ab-nudged'); if(!n.getAttribute('style')) n.removeAttribute('style'); if(!n.className) n.removeAttribute('class'); });
     if(commitStyles(el)) msg('Élément remis à son état d’origine (place, taille et cadrage). Pensez à enregistrer.');
   }
