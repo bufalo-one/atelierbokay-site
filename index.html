@@ -907,7 +907,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
 .ab-el-hand{position:fixed;z-index:66;display:none;width:28px;height:30px;padding:0;border:1px solid #284737;background:#284737;color:#f6efe4;font:17px/1 Arial,sans-serif;cursor:grab;touch-action:none;box-shadow:0 4px 12px rgba(0,0,0,.22)}
 .ab-el-hand:hover{background:#bd663b;border-color:#bd663b}
 .ab-el-hand2{width:auto;padding:0 6px;font-size:13px;background:#fffdf8;color:#284737}
-.ab-el-pad{position:fixed;z-index:66;display:none;grid-template-columns:repeat(3,26px);grid-template-rows:repeat(3,26px);gap:2px}.ab-el-pad .ab-el-dir{position:static;display:block;width:26px;height:26px;font-size:14px}.ab-el-pad .ab-el-up{grid-column:2;grid-row:1}.ab-el-pad .ab-el-left{grid-column:1;grid-row:2}.ab-el-pad .ab-el-right{grid-column:3;grid-row:2}.ab-el-pad .ab-el-down{grid-column:2;grid-row:3}.ab-el-pad .ab-el-reset{grid-column:2;grid-row:2;background:#fffdf8;color:#284737}.ab-el-size{cursor:nwse-resize!important;width:24px!important;height:24px!important;font-size:13px!important}.ab-el-crop{cursor:move!important;width:auto!important;padding:0 8px!important;font-size:12px!important;background:#fffdf8!important;color:#284737!important}.ab-el-pad .ab-el-dir:disabled{cursor:default}
+.ab-el-pad{position:fixed;z-index:66;display:none;grid-template-columns:repeat(3,26px);grid-template-rows:repeat(3,26px);gap:2px}.ab-el-pad .ab-el-dir{position:static;display:block;width:26px;height:26px;font-size:14px}.ab-el-pad .ab-el-up{grid-column:2;grid-row:1}.ab-el-pad .ab-el-left{grid-column:1;grid-row:2}.ab-el-pad .ab-el-right{grid-column:3;grid-row:2}.ab-el-pad .ab-el-down{grid-column:2;grid-row:3}.ab-el-pad .ab-el-reset{grid-column:2;grid-row:2;background:#fffdf8;color:#284737}.ab-guide{position:fixed;z-index:67;display:none;pointer-events:none;background:#bd663b}.ab-guide-v{top:0;bottom:0;width:1px}.ab-guide-h{left:0;right:0;height:1px}.ab-el-size{cursor:nwse-resize!important;width:24px!important;height:24px!important;font-size:13px!important}.ab-el-crop{cursor:move!important;width:auto!important;padding:0 8px!important;font-size:12px!important;background:#fffdf8!important;color:#284737!important}.ab-el-pad .ab-el-dir:disabled{cursor:default}
 .ab-el-box{position:fixed;z-index:64;pointer-events:none;outline:2px solid #bd663b;outline-offset:3px;display:none}
 </style>
 <script>
@@ -1416,7 +1416,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
 
   /* Déplacer chaque élément (texte, photo, carte…) */
   var MOV='.card, .rows > li, .steps > li, .tags, figure, img, .btns, a.button-dark, a.button-cream, a.text-link, h1, h2, h3, p, form, .brand-portrait, .direct-whatsapp, .socials, .disclaimer';
-  var pad=null, padBtns={}, sizeH=null, cropH=null;
+  var pad=null, padBtns={}, sizeH=null, cropH=null, gv=null, gh=null;
   var hand=null, hand2=null, hbox=null, handFor=null, groupFor=null, elDragging=false;
   var GROUPS='.rows, .steps, .cards, .gallery, .ab-bloc-gal';
   function groupOf(u){ var g=u&&u.parentNode&&u.parentNode.closest&&u.parentNode.closest(GROUPS); var sec=u&&u.closest('main .page > section'); return g&&sec&&sec.contains(g)&&!g.closest('#pj-grid,#pj-tools')?g:null; }
@@ -1535,10 +1535,21 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     try{ hand.setPointerCapture(ev.pointerId); }catch(e){}
     document.body.classList.add('ab-drag-on');
     var lx=sx, ly=sy, raf=0;
+    var page=el.closest('.page'), cands=[];
+    unitsIn(page).forEach(function(u){ if(u===el||el.contains(u)||u.contains(el)) return; var r=u.getBoundingClientRect(); cands.push({l:r.left+scrollX,r:r.right+scrollX,t:r.top+scrollY,b:r.bottom+scrollY}); });
+    var shell=el.closest('.shell'); if(shell){ var cs=getComputedStyle(shell), sr=shell.getBoundingClientRect(), pl=parseFloat(cs.paddingLeft)||0, pr=parseFloat(cs.paddingRight)||0;
+      cands.push({l:sr.left+pl+scrollX,r:sr.right-pr+scrollX,t:null,b:null}); }
+    if(!gv){ gv=document.createElement('div'); gv.className='ab-guide ab-guide-v ab-ui'; gh=document.createElement('div'); gh.className='ab-guide ab-guide-h ab-ui'; document.body.appendChild(gv); document.body.appendChild(gh); }
+    function best(vals,targets){ var m=null; vals.forEach(function(v){ targets.forEach(function(t){ if(t==null) return; var d=t-v; if(Math.abs(d)<=6&&(!m||Math.abs(d)<Math.abs(m.d))) m={d:d,at:t}; }); }); return m; }
     function apply(){
       var dy=ly-sy+(window.scrollY-sy0), dx=lx-sx;
       var t=Math.max(-1500,Math.min(3000,Math.round(t0+dy))), l=Math.max(-1200,Math.min(1200,Math.round(l0+dx)));
       el.style.position='relative'; el.style.top=t+'px'; el.style.left=l+'px'; el.classList.add('ab-nudged');
+      var r=el.getBoundingClientRect(), L=r.left+scrollX, R=r.right+scrollX, T=r.top+scrollY, B=r.bottom+scrollY;
+      var xs=[], ys=[]; cands.forEach(function(c){ xs.push(c.l,c.r,(c.l+c.r)/2); if(c.t!=null) ys.push(c.t,c.b,(c.t+c.b)/2); });
+      var mx=best([L,R,(L+R)/2],xs), my=best([T,B,(T+B)/2],ys);
+      if(mx){ l=Math.round(l+mx.d); el.style.left=l+'px'; gv.style.display='block'; gv.style.left=Math.round(mx.at-scrollX)+'px'; } else gv.style.display='none';
+      if(my){ t=Math.round(t+my.d); el.style.top=t+'px'; gh.style.display='block'; gh.style.top=Math.round(my.at-scrollY)+'px'; } else gh.style.display='none';
       showHand(el);
     }
     function tick(){ var h=window.innerHeight; if(ly<80) window.scrollBy(0,-Math.ceil((80-ly)/5)); else if(ly>h-80) window.scrollBy(0,Math.ceil((ly-(h-80))/5)); apply(); raf=requestAnimationFrame(tick); }
@@ -1547,6 +1558,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
       cancelAnimationFrame(raf);
       hand.removeEventListener('pointermove',mv); hand.removeEventListener('pointerup',up); hand.removeEventListener('pointercancel',up);
       document.body.classList.remove('ab-drag-on'); elDragging=false;
+      if(gv){ gv.style.display='none'; gh.style.display='none'; }
       if(!(parseInt(el.style.top,10)||0)&&!(parseInt(el.style.left,10)||0)){ el.style.removeProperty('top'); el.style.removeProperty('left'); el.style.removeProperty('position'); el.classList.remove('ab-nudged'); if(!el.getAttribute('style')) el.removeAttribute('style'); }
       if(commitStyles(el)) msg('Élément placé. Pensez à enregistrer (⟲ pour le remettre à sa place).');
       if(el.isConnected) showHand(el);
