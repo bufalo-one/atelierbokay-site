@@ -874,7 +874,7 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
 .ab-owner .ab-fmt button:hover{background:#bd663b;border-color:#bd663b;color:#fff}
 /* Blocs ajoutés depuis l'espace propriétaire */
 .ab-bloc{position:relative}
-@media (max-width:860px){.ab-nudged{left:0!important;top:0!important;margin-top:0!important}.ab-sized{width:auto!important;max-width:100%!important}.ab-sized img,img.ab-sized{height:auto!important;aspect-ratio:3/2!important}}
+@media (max-width:860px){.ab-nudged{left:0!important;top:0!important;margin-top:0!important}.ab-sized{width:auto!important;max-width:100%!important;min-height:0!important}.ab-sized img,img.ab-sized{height:auto!important;aspect-ratio:3/2!important}}
 .ab-bloc .ab-stack>*+*{margin-top:18px}
 .ab-bloc p:not(.eyebrow){color:#656b61;max-width:70ch}
 .ab-bloc-fig{margin:0;min-width:0}
@@ -1451,7 +1451,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     rs.addEventListener('mousedown',function(e){ e.preventDefault(); });
     rs.onclick=function(e){ e.preventDefault(); e.stopPropagation(); if(handFor){ resetAll(handFor); if(handFor.isConnected) showHand(handFor); } };
     pad.appendChild(rs); padBtns.reset=rs;
-    sizeH=document.createElement('button'); sizeH.type='button'; sizeH.className='ab-el-hand ab-el-size ab-ui'; sizeH.textContent='◢'; sizeH.title='Tirer pour changer la taille (largeur, et hauteur pour une image)'; sizeH.setAttribute('aria-label','Changer la taille');
+    sizeH=document.createElement('button'); sizeH.type='button'; sizeH.className='ab-el-hand ab-el-size ab-ui'; sizeH.textContent='◢'; sizeH.title='Tirer pour changer la largeur et la hauteur'; sizeH.setAttribute('aria-label','Changer la taille');
     sizeH.addEventListener('mousedown',function(e){ e.preventDefault(); }); sizeH.addEventListener('pointerdown',startResize); document.body.appendChild(sizeH);
     cropH=document.createElement('button'); cropH.type='button'; cropH.className='ab-el-hand ab-el-crop ab-ui'; cropH.textContent='✥ Recadrer'; cropH.title='Maintenir et faire glisser pour recadrer la photo'; cropH.setAttribute('aria-label','Recadrer la photo');
     cropH.addEventListener('mousedown',function(e){ e.preventDefault(); }); cropH.addEventListener('pointerdown',startCrop); document.body.appendChild(cropH);
@@ -1503,10 +1503,11 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
       var w=Math.max(80,Math.min(1400,Math.round(r.width+e.clientX-sx)));
       el.style.width=w+'px'; el.style.maxWidth='none'; el.classList.add('ab-sized');
       if(img){ var h=Math.max(60,Math.min(2000,Math.round(ir.height+e.clientY-sy))); img.style.height=h+'px'; img.style.aspectRatio='auto'; img.style.objectFit='cover'; if(img!==el) img.style.width='100%'; }
+      else { var th=Math.max(16,Math.min(3000,Math.round(r.height+e.clientY-sy))); el.style.minHeight=th+'px'; }
       showHand(el);
     }
     function up(){ sizeH.removeEventListener('pointermove',mv); sizeH.removeEventListener('pointerup',up); sizeH.removeEventListener('pointercancel',up); elDragging=false;
-      if(commitStyles(el)) msg(img?'Image redimensionnée. Pensez à enregistrer.':'Largeur du texte modifiée. Pensez à enregistrer.'); if(el.isConnected) showHand(el); }
+      if(commitStyles(el)) msg(img?'Image redimensionnée. Pensez à enregistrer.':'Cadre du texte redimensionné. Pensez à enregistrer.'); if(el.isConnected) showHand(el); }
     sizeH.addEventListener('pointermove',mv); sizeH.addEventListener('pointerup',up); sizeH.addEventListener('pointercancel',up);
   }
   function startCrop(ev){
@@ -1523,7 +1524,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
   }
   function resetAll(el){
     var img=imgOf(el);
-    [el,img].forEach(function(n){ if(!n) return; ['margin-top','top','left','position','width','max-width','height','aspect-ratio','object-fit','object-position'].forEach(function(k){ n.style.removeProperty(k); });
+    [el,img].forEach(function(n){ if(!n) return; ['margin-top','top','left','position','width','max-width','min-height','height','aspect-ratio','object-fit','object-position'].forEach(function(k){ n.style.removeProperty(k); });
       n.classList.remove('ab-sized'); n.classList.remove('ab-nudged'); if(!n.getAttribute('style')) n.removeAttribute('style'); if(!n.className) n.removeAttribute('class'); });
     if(commitStyles(el)) msg('Élément remis à son état d’origine (place, taille et cadrage). Pensez à enregistrer.');
   }
@@ -1587,7 +1588,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     ['up','down','left','right'].forEach(function(d){ var b=padBtns[d]; b.disabled=!mv[d]; b.style.opacity=mv[d]?'1':'.3'; });
     sizeH.style.display='block'; sizeH.style.left=Math.round(r.right-24)+'px'; sizeH.style.top=Math.round(r.bottom-24)+'px';
     var ui=imgOf(u); if(ui){ var irr=ui.getBoundingClientRect(); cropH.style.display='block'; cropH.style.left=Math.round(irr.right-96)+'px'; cropH.style.top=Math.round(irr.top+8)+'px'; } else cropH.style.display='none';
-    var ui2=imgOf(u); var moved=!!(u.style.marginTop||u.style.top||u.style.left||u.style.width||(ui2&&(ui2.style.height||ui2.style.objectPosition))); padBtns.reset.disabled=!moved; padBtns.reset.style.opacity=moved?'1':'.3';
+    var ui2=imgOf(u); var moved=!!(u.style.marginTop||u.style.top||u.style.left||u.style.width||u.style.minHeight||(ui2&&(ui2.style.height||ui2.style.objectPosition))); padBtns.reset.disabled=!moved; padBtns.reset.style.opacity=moved?'1':'.3';
   }
   document.addEventListener('pointermove',function(e){
     if(!editing||elDragging||(e.target&&e.target.classList&&e.target.classList.contains('ab-el-hand'))) return;
