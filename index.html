@@ -1328,12 +1328,25 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
       box.appendChild(g);
       b('↑ Monter','Monter le bloc',function(){ moveBloc(el,-1); });
       b('↓ Descendre','Descendre le bloc',function(){ moveBloc(el,1); });
+      if(splitKids(splitOf(el)).length===2) b('⇄ Inverser','Inverser la gauche et la droite',function(){ swapSides(el); });
       if(el.classList.contains('ab-bloc')) b('Supprimer','Supprimer le bloc',function(x){
         if(!x.classList.contains('sure')){ x.classList.add('sure'); x.textContent='Confirmer la suppression'; setTimeout(function(){ if(x.isConnected){ x.classList.remove('sure'); x.textContent='Supprimer'; } },4000); return; }
         deleteBloc(el);
       },'danger');
       el.insertBefore(box,el.firstChild);
     });
+  }
+  function splitOf(s){ return s&&(s.querySelector(':scope > .shell.split')||s.querySelector(':scope > .shell > .split')); }
+  function splitKids(x){ return x?[].slice.call(x.children).filter(function(k){ return !k.classList.contains('ab-bloc-tools'); }):[]; }
+  function swapSides(el){
+    var page=el.parentNode, d=srcDoc(), sp0=d.getElementById(page.id);
+    if(!sameShape(page,sp0)){ msg('Inversion impossible : enregistrez, puis réessayez.'); return; }
+    var se=sp0.children[[].indexOf.call(page.children,el)];
+    var a=splitOf(el), b=splitOf(se), ka=splitKids(a), kb=splitKids(b);
+    if(ka.length!==2||kb.length!==2){ msg('Ce bloc ne peut pas être inversé.'); return; }
+    a.insertBefore(ka[1],ka[0]); b.insertBefore(kb[1],kb[0]);
+    source=d.body.innerHTML; retag();
+    msg('Gauche et droite inversées. Pensez à enregistrer.');
   }
   function sectionLabel(sec,i){
     var h=sec.querySelector('.eyebrow, h1, h2, h3');
