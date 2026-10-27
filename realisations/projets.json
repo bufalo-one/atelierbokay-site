@@ -1,6 +1,49 @@
 {
  "projets": [
   {
+   "id": "pmvqqbcov",
+   "titre": "Le Standing Pointe Bois d'Inde",
+   "lieu": "Martinique",
+   "annee": "2026",
+   "description": "Le client souhaite aménager le sous sol d'une maison sur demi-piloti. \nLes souhaits sont  : \n2 chambres, 1 dressing, 1 buanderie, 1 salle de sport, 1 salle de bain, une cuisine, un salon. \nChambre principale: une coiffeuse. \nCuisine avec îlot central 4 places , une plaque au gaz + hotte, un thermomix, un congélateur à tiroir, 2 réfrigérateurs, micro onde, four, évier moderne.\nLes ouvrants seront à maximiser afin de permettre une aération optimale dans tout le logement.",
+   "couverture": 10,
+   "photos": [
+    {
+     "src": "realisations/img/df313d06ce19246940605554488d845f.jpg"
+    },
+    {
+     "src": "realisations/img/566bc8f55ecd4d0ceabde581c7b94a96.jpg"
+    },
+    {
+     "src": "realisations/img/55d67a3f879549562ff61e3f05656edc.jpg"
+    },
+    {
+     "src": "realisations/img/8a0dd2d8e672f9f84bc9bbc8472d10b5.jpg"
+    },
+    {
+     "src": "realisations/img/1dd2370652e25b185b2cc6e455785d5e.jpg"
+    },
+    {
+     "src": "realisations/img/4372a7da7924992de7fa05bdede30e71.jpg"
+    },
+    {
+     "src": "realisations/img/052f8b60e8b6577b07ccb597ab3987d1.jpg"
+    },
+    {
+     "src": "realisations/img/228a6fff2628d1e3b4a70b91399646e9.jpg"
+    },
+    {
+     "src": "realisations/img/648b76107295b96f416e7c2c5cb40c48.jpg"
+    },
+    {
+     "src": "realisations/img/8806bcf31ce7a5df02ee58ac5fae6323.jpg"
+    },
+    {
+     "src": "realisations/img/4ff008b167005373922ec8253bd52cc0.jpg"
+    }
+   ]
+  },
+  {
    "id": "pmve9amdt",
    "titre": "Vivre dans les combles  \"Japandi\"",
    "lieu": "Antananarivo Madagascar",
