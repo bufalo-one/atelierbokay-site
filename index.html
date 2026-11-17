@@ -352,7 +352,7 @@ header .logo-img,footer .logo-img{background:transparent!important}
   <section id="qui-suis-je"><div class="shell split">
     <div class="head"><p class="eyebrow ab-nudged" style="position: relative; top: -86px; left: 0px;">Qui suis-je</p><h2 style="position: relative; top: -60px; left: 0px;" class="ab-nudged"><span class="ab-f-vibes"><span class="ab-s-p3">Olivier Vincendon</span></span><em>Architecte d'intérieur, fondateur d'AtelierBôKay</em></h2><p class="ab-a-justify ab-nudged" style="position: relative; top: -28px; left: 0px;">Architecte d'intérieur, diplômé de l'École Moderne dont les locaux se trouvent à Mougins, dans les Alpes-Maritimes. <br>Mon parcours a commencé sur les chantiers : formé aux métiers du bâtiment dans la pose de revêments de sol, peintre, technicien froid et climatisation, électrotechnique, je cumule aujourd'hui vingt ans d'expérience en bâtiment.<br></p></div>
     <div class="right"><p class="ab-a-justify ab-nudged" style="position: relative; top: 377px; left: -584px;"><span class="ab-f-dmsans">Cette connaissance du terrain guide chacun de mes projets : je dessine des espaces en sachant comment ils se construisent et comment ils se vivent au quotidien.</span></p><p class="ab-a-justify ab-nudged" style="position: relative; top: 714px; left: -584px;"><br></p><p class="ab-a-justify ab-nudged" style="position: relative; top: -168px; left: 0px;">J’ai fondé AtelierBôkay pour rester fidèle à une idée simple : un projet est plus juste quand on en garde la maîtrise, de la première esquisse jusqu’au chantier.<br>Chaque création est ainsi pensée sincèrement pour vous et pour votre lieu, en toute indépendance : aucune marque, aucun fournisseur, aucun catalogue ne guide nos choix.</p><p class="ab-a-justify ab-nudged" style="position: relative; top: -100px; left: 0px;">Je m'adresse à celles et ceux qui estiment que leur intérieur ne leur ressemble plus, ou qu'il a perdu son souffle. <br>Faire revivre un lieu, c'est plus que changer une couleur ou un meuble. C'est retrouver la lumière, réorganiser les circulations, choisir des matières qui ont du caractère, et redonner à chaque pièce une raison d'être. <br>Mon rôle est de vous écouter, de traduire vos envies en un projet cohérent et de l'accompagner jusqu'à sa réalisation, pour que vous puissiez enfin vous sentir <em>bô kay</em>, à la maison.</p><p style="position: relative; top: 59px; left: 0px;" class="ab-nudged">Chaque projet est unique ! Le style d'AtelierBôKay s’inspire de l’art premier et de ses déclinaisons : des volumes francs, des matières brutes et une chaleur ancrée dans les origines de ce style. Cette signature n'enferme pas pour autant : contemporain, scandinave, japandi, industriel, baroque, classique revisité sont autant de style que L'équipe AtelierBoKay maîtrise, ainsi que les tendances actuelles, et c’est toujours votre projet qui guidera nos choix.</p></div>
-  </div></section><section class="home-hero"><div class="shell hero-grid">
+  </div></section><section class="ab-bloc" data-bloc="bmwkoov9y" data-type="image"><div class="shell ab-bloc-small"><figure class="ab-bloc-fig ab-nudged ab-sized" style="position: relative; top: -418px; left: -291px; width: 513px; max-width: none; margin-bottom: -70px;"><img class="ab-bloc-img" data-asset="2349a2f60978faeb8f0ed0872f710b50" src="blocs/img/2349a2f60978faeb8f0ed0872f710b50.jpg" alt="" style="height: 337px; aspect-ratio: auto; object-fit: cover; width: 100%; object-position: 50% 100%;"></figure></div></section><section class="home-hero"><div class="shell hero-grid">
     <div class="head"><p class="eyebrow">À propos · AtelierBokay</p><h1>Créer des intérieurs<em>qui ont une âme.</em></h1>
       <p class="lead">AtelierBokay, c'est une approche de l'architecture d'intérieur guidée par l'écoute, l'équilibre des matières et l'envie de créer des lieux à votre image.</p>
       <div><a class="button-dark" href="#contact">Faire connaissance <span>↗</span></a></div></div>
@@ -883,6 +883,10 @@ body.ab-editing img[data-i]:hover{filter:brightness(.85)}
 .ab-bloc-fig figcaption{padding-top:10px;font-size:.82rem;color:#656b61}
 .ab-bloc-gal{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:30px}
 @media (max-width:760px){.ab-bloc-gal{grid-template-columns:1fr}}
+.ab-bloc[data-type="image"]{padding-block:clamp(16px,3vw,32px)}
+.ab-bloc-small{display:flex;justify-content:center}
+.ab-bloc-small .ab-bloc-fig{width:100%;max-width:400px}
+.ab-bloc-small .ab-bloc-fig img{aspect-ratio:auto;height:auto}
 .ab-bloc-img[data-asset=""]{display:none!important}
 body.ab-editing .ab-bloc-img[data-asset=""]{display:block!important}
 body.ab-editing .ab-bloc{outline:2px dashed rgba(40,71,55,.35);outline-offset:-10px}
@@ -1250,7 +1254,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
   /* Blocs : texte, photo, texte + photo, galerie */
   var PH='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="#e5e7dc"/><text x="300" y="207" font-family="Arial,sans-serif" font-size="22" fill="#656b61" text-anchor="middle">Cliquez pour choisir une photo</text></svg>');
   var PAGES={'p-accueil':'Accueil','p-services':'Services','p-apropos':'À propos','p-realisations':'Réalisations','p-inspiration':'Inspiration','p-tarifs':'Tarifs','p-contact':'Contact'};
-  var TYPES=[['texte','Texte','Un titre et un paragraphe'],['photo','Photo','Une grande image avec légende'],['texte-photo','Texte + photo','Le texte à gauche, la photo à droite'],['galerie','Galerie','Trois photos côte à côte']];
+  var TYPES=[['texte','Texte','Un titre et un paragraphe'],['photo','Photo','Une grande image avec légende'],['texte-photo','Texte + photo','Le texte à gauche, la photo à droite'],['galerie','Galerie','Trois photos côte à côte'],['image','Image simple','Une petite image seule, centrée']];
   function blocImg(){ return '<img class="ab-bloc-img" data-asset="" src="'+PH+'" alt="">'; }
   function blocFig(cap){ return '<figure class="ab-bloc-fig">'+blocImg()+(cap?'<figcaption><span>Légende de la photo</span></figcaption>':'')+'</figure>'; }
   function blocHTML(type,id){
@@ -1258,6 +1262,7 @@ body.ab-drag-on,body.ab-drag-on *{cursor:grabbing!important;user-select:none!imp
     var txt='<p>Votre texte. Cliquez ici pour écrire, puis mettez-le en forme avec la barre d’outils.</p>';
     var inner;
     if(type==='photo') inner='<div class="shell ab-bloc-wide">'+blocFig(true)+'</div>';
+    else if(type==='image') inner='<div class="shell ab-bloc-small">'+blocFig(false)+'</div>';
     else if(type==='texte-photo') inner='<div class="shell split"><div class="head">'+head+txt+'</div>'+blocFig(false)+'</div>';
     else if(type==='galerie') inner='<div class="shell ab-stack">'+head+'<div class="ab-bloc-gal">'+blocFig(true)+blocFig(true)+blocFig(true)+'</div></div>';
     else inner='<div class="shell ab-stack">'+head+txt+'</div>';
