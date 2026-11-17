@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Sort les photos intégrées dans index.html (data:image en base64) vers page/img/,
-pour qu'elles reçoivent le filigrane comme les autres photos.
+"""Sort les photos des blocs intégrées dans index.html (data:image en base64) vers page/img/,
+pour qu'elles reçoivent le filigrane comme les autres photos d'AtelierBokay.
 
 Usage : python3 scripts/photos_page.py index.html  (appelé aussi par seo.py ; ré-exécutable sans risque)
-Le logo (class logo-img) et le QR code (alt contenant « QR ») restent intégrés, sans filigrane.
+Seules les images class="ab-bloc-img" sont concernées : le logo, le QR code et les photos
+d'ambiance qui ne sont pas d'AtelierBokay restent intégrées, sans filigrane.
 Chaque photo est nommée d'après son contenu : la même photo garde le même fichier d'une publication
 à l'autre et n'est donc filigranée qu'une fois. Les fichiers qui ne servent plus sont supprimés.
 """
@@ -17,10 +18,9 @@ SRC = re.compile(r'src="data:image/(png|jpe?g|webp|gif);base64,([A-Za-z0-9+/=\s]
 
 
 def garder(tag):
-    if re.search(r'class="[^"]*\blogo-img\b', tag):
-        return True
-    alt = re.search(r'alt="([^"]*)"', tag)
-    return bool(alt and "qr" in alt.group(1).lower())
+    # Seules les photos des blocs (class ab-bloc-img), qui sont les photos d'AtelierBokay,
+    # reçoivent le filigrane. Les autres images de la page restent intégrées telles quelles.
+    return not re.search(r'class="[^"]*\bab-bloc-img\b', tag)
 
 
 def main(chemin):
