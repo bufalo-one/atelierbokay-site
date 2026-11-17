@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Sort les photos des blocs intégrées dans index.html (data:image en base64) vers page/img/,
-pour qu'elles reçoivent le filigrane comme les autres photos d'AtelierBokay.
+"""Sort les photos intégrées dans index.html (data:image en base64) vers page/img/,
+pour qu'elles reçoivent le filigrane « © AtelierBokay » comme les autres photos.
 
 Usage : python3 scripts/photos_page.py index.html  (appelé aussi par seo.py ; ré-exécutable sans risque)
-Seules les images class="ab-bloc-img" sont concernées : le logo, le QR code et les photos
-d'ambiance qui ne sont pas d'AtelierBokay restent intégrées, sans filigrane.
+Toute photo ajoutée ou remplacée dans la page est considérée comme une photo d'AtelierBokay.
+Restent intégrés sans filigrane : le logo (class logo-img), le QR code (alt contenant « QR »)
+et les photos qui ne sont pas d'AtelierBokay, listées dans page/sans-filigrane.txt
+(une empreinte de 20 caractères par ligne, = nom du fichier sans .jpg).
 Chaque photo est nommée d'après son contenu : la même photo garde le même fichier d'une publication
 à l'autre et n'est donc filigranée qu'une fois. Les fichiers qui ne servent plus sont supprimés.
 """
@@ -17,16 +19,26 @@ IMG = re.compile(r'<img\b[^>]*>', re.I)
 SRC = re.compile(r'src="data:image/(png|jpe?g|webp|gif);base64,([A-Za-z0-9+/=\s]+)"', re.I)
 
 
+EXCLUES = os.path.join(RACINE, "page", "sans-filigrane.txt")
+
+
+def exclues():
+    if not os.path.exists(EXCLUES):
+        return set()
+    return {l.split("#")[0].strip() for l in open(EXCLUES, encoding="utf-8")} - {""}
+
+
 def garder(tag):
-    # Seules les photos des blocs (class ab-bloc-img), qui sont les photos d'AtelierBokay,
-    # reçoivent le filigrane. Les autres images de la page restent intégrées telles quelles.
-    return not re.search(r'class="[^"]*\bab-bloc-img\b', tag)
+    if re.search(r'class="[^"]*\blogo-img\b', tag):
+        return True
+    alt = re.search(r'alt="([^"]*)"', tag)
+    return bool(alt and "qr" in alt.group(1).lower())
 
 
 def main(chemin):
     s = open(chemin, encoding="utf-8").read()
     os.makedirs(DOSSIER, exist_ok=True)
-    utilises, sorties = set(), 0
+    utilises, sorties, sans = set(), 0, exclues()
 
     def remplacer(m):
         nonlocal sorties
@@ -35,7 +47,10 @@ def main(chemin):
         if not src or garder(tag):
             return tag
         brut = base64.b64decode(re.sub(r"\s", "", src.group(2)))
-        nom = hashlib.sha1(brut).hexdigest()[:20] + ".jpg"
+        empreinte = hashlib.sha1(brut).hexdigest()[:20]
+        if empreinte in sans:
+            return tag
+        nom = empreinte + ".jpg"
         utilises.add(nom)
         fichier = os.path.join(DOSSIER, nom)
         if not os.path.exists(fichier):
