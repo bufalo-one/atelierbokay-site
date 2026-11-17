@@ -34,4 +34,10 @@ if block:
     i = s.index('</head>')
     s = s[:i] + block + s[i:]
 open(p, 'w', encoding='utf-8').write(s)
-print('ok', len(s), 'moved:', len(moved))
+# Photos intégrées à la page -> page/img/ (pour le filigrane)
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.dont_write_bytecode = True
+import photos_page
+n = photos_page.main(p)
+print('ok', len(open(p, encoding='utf-8').read()), 'moved:', len(moved), 'photos:', n)

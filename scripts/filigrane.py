@@ -2,14 +2,15 @@
 """Ajoute le filigrane « AtelierBokay » sur les photos des réalisations.
 
 Usage : python3 scripts/filigrane.py
-Traite chaque *.jpg de realisations/img/ et blocs/img/ qui n'est pas encore listé
+Traite chaque *.jpg de realisations/img/, blocs/img/ et page/img/ qui n'est pas encore listé
 dans le filigrane.txt de son dossier, puis met cette liste à jour (une seule fois par photo).
 """
 import os, sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DOSSIERS = [os.path.join(RACINE, "realisations", "img"), os.path.join(RACINE, "blocs", "img")]
+DOSSIERS = [os.path.join(RACINE, "realisations", "img"), os.path.join(RACINE, "blocs", "img"),
+           os.path.join(RACINE, "page", "img")]
 POLICE = os.path.join(RACINE, "scripts", "fonts", "DejaVuSerif.ttf")
 TEXTE = "© AtelierBokay"
 
